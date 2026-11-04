@@ -1,0 +1,15 @@
+[Unit]
+Description=SIGES Help Desk notification queue worker
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/siges
+ExecStart=/usr/bin/php artisan queue:work database --queue=notifications --sleep=3 --tries=3 --timeout=120 --backoff=60 --max-time=3600
+Restart=always
+RestartSec=5
+TimeoutStopSec=360
+
+[Install]
+WantedBy=multi-user.target

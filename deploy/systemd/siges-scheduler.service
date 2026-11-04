@@ -1,0 +1,12 @@
+[Unit]
+Description=SIGES scheduled tasks
+After=network.target
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/siges
+ExecStart=/usr/bin/php artisan schedule:run
+TimeoutStartSec=3600
+UMask=0027
