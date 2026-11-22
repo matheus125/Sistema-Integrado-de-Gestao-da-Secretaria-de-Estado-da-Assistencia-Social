@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\Transport;
 
 use App\Http\Controllers\Controller;
 use App\Models\Driver;
+use App\Rules\BrazilianPhoneRule;
+use App\Support\BrazilianPhone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -60,13 +62,19 @@ class DriverController extends Controller
 
     private function validatedData(Request $request, ?Driver $driver = null): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:160'],
             'cnh' => ['required', 'string', 'max:40', Rule::unique('drivers', 'cnh')->ignore($driver)],
             'cnh_category' => ['required', 'string', 'max:10'],
             'cnh_expires_at' => ['required', 'date'],
-            'phone' => ['nullable', 'string', 'max:40'],
+            'phone' => ['nullable', 'string', 'max:25', new BrazilianPhoneRule],
             'status' => ['required', Rule::in(['ativo', 'inativo', 'afastado'])],
         ]);
+
+        if (array_key_exists('phone', $data)) {
+            $data['phone'] = BrazilianPhone::normalize($data['phone']);
+        }
+
+        return $data;
     }
 }

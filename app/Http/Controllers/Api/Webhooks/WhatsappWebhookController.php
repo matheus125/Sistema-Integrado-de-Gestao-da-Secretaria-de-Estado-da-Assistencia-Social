@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api\Webhooks;
 
 use App\Http\Controllers\Controller;
-use App\Services\It\WhatsappTicketService;
 use App\Services\It\WhatsappOutboundService;
+use App\Services\It\WhatsappTicketService;
+use App\Services\It\WhatsappVerifyToken;
 use App\Services\Settings\SettingValue;
+use App\Support\BrazilianPhone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -18,9 +20,13 @@ class WhatsappWebhookController extends Controller
         $mode = $request->query('hub_mode') ?? $request->query('hub.mode');
         $token = $request->query('hub_verify_token') ?? $request->query('hub.verify_token');
         $challenge = $request->query('hub_challenge') ?? $request->query('hub.challenge');
-        $expectedToken = SettingValue::get('whatsapp_business_verify_token', 'siges-webhook-token');
+        $expectedToken = SettingValue::get('whatsapp_business_verify_token');
 
-        if ($mode === 'subscribe' && hash_equals((string) $expectedToken, (string) $token)) {
+        if (! WhatsappVerifyToken::isSecure($expectedToken)) {
+            return response()->json(['message' => 'Webhook verification unavailable.'], 503);
+        }
+
+        if ($mode === 'subscribe' && is_string($token) && hash_equals($expectedToken, $token)) {
             return response((string) $challenge, 200)->header('Content-Type', 'text/plain');
         }
 
@@ -71,6 +77,7 @@ class WhatsappWebhookController extends Controller
                 foreach ($value['messages'] ?? [] as $message) {
                     if (($message['type'] ?? null) !== 'text') {
                         Log::info('whatsapp unsupported message ignored', ['type' => $message['type'] ?? null]);
+
                         continue;
                     }
 
@@ -78,7 +85,11 @@ class WhatsappWebhookController extends Controller
                     $contact = $contacts->get($phone, []);
                     $text = trim((string) data_get($message, 'text.body', ''));
 
-                    if ($phone === '' || $text === '') {
+                    if (! BrazilianPhone::isValid($phone) || $text === '') {
+                        if ($phone !== '' && $text !== '') {
+                            Log::warning('whatsapp message with invalid Brazilian phone ignored');
+                        }
+
                         continue;
                     }
 

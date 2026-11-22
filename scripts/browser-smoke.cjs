@@ -40,7 +40,7 @@ const path = require('node:path');
     }
     const apiChecks = await page.evaluate(async () => {
       const api = location.port === '9000' ? 'http://127.0.0.1:8000/api' : '/api';
-      const headers = { Authorization: `Bearer ${localStorage.getItem('siges_token')}`, Accept: 'application/json' };
+      const headers = { Authorization: `Bearer ${sessionStorage.getItem('siges_token')}`, Accept: 'application/json' };
       const get = async path => {
         const response = await fetch(api + path, { headers });
         if (!response.ok) throw Error(`API ${response.status}: ${path}`);
@@ -67,11 +67,12 @@ const path = require('node:path');
     await page.screenshot({ path: path.join(output, 'dashboard-mobile.png'), fullPage: true });
   } finally {
     await page.evaluate(async () => {
-      const token = localStorage.getItem('siges_token');
+      const token = sessionStorage.getItem('siges_token');
       if (token) {
         const api = location.port === '9000' ? 'http://127.0.0.1:8000/api' : '/api';
         await fetch(api + '/auth/logout', { method: 'POST', headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
       }
+      sessionStorage.clear();
       localStorage.clear();
     }).catch(() => {});
     await browser.close();

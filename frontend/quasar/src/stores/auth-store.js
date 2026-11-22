@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia'
 import { apiFetch } from '@/services/api'
+import { clearAuthStorage, getAccessToken, getAuthJson, setAuthItem } from '@/services/auth-storage'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    token: localStorage.getItem('siges_token'),
-    user: JSON.parse(localStorage.getItem('siges_user') || 'null'),
-    roles: JSON.parse(localStorage.getItem('siges_roles') || '[]'),
-    permissions: JSON.parse(localStorage.getItem('siges_permissions') || '[]'),
+    token: getAccessToken(),
+    user: getAuthJson('siges_user', null),
+    roles: getAuthJson('siges_roles', []),
+    permissions: getAuthJson('siges_permissions', []),
     loading: false
   }),
 
@@ -27,7 +28,7 @@ export const useAuthStore = defineStore('auth', {
           method: 'POST',
           body: JSON.stringify({
             ...credentials,
-            device_name: 'siges-web'
+            device_name: browserDeviceName()
           })
         })
 
@@ -36,10 +37,10 @@ export const useAuthStore = defineStore('auth', {
         this.roles = data.roles || []
         this.permissions = data.permissions || []
 
-        localStorage.setItem('siges_token', this.token)
-        localStorage.setItem('siges_user', JSON.stringify(this.user))
-        localStorage.setItem('siges_roles', JSON.stringify(this.roles))
-        localStorage.setItem('siges_permissions', JSON.stringify(this.permissions))
+        setAuthItem('siges_token', this.token)
+        setAuthItem('siges_user', JSON.stringify(this.user))
+        setAuthItem('siges_roles', JSON.stringify(this.roles))
+        setAuthItem('siges_permissions', JSON.stringify(this.permissions))
       } finally {
         this.loading = false
       }
@@ -52,9 +53,9 @@ export const useAuthStore = defineStore('auth', {
       this.user = data.user
       this.roles = data.roles || []
       this.permissions = data.permissions || []
-      localStorage.setItem('siges_user', JSON.stringify(this.user))
-      localStorage.setItem('siges_roles', JSON.stringify(this.roles))
-      localStorage.setItem('siges_permissions', JSON.stringify(this.permissions))
+      setAuthItem('siges_user', JSON.stringify(this.user))
+      setAuthItem('siges_roles', JSON.stringify(this.roles))
+      setAuthItem('siges_permissions', JSON.stringify(this.permissions))
     },
 
     async logout() {
@@ -62,14 +63,22 @@ export const useAuthStore = defineStore('auth', {
         await apiFetch('/auth/logout', { method: 'POST' }).catch(() => {})
       }
 
+      this.clearSession()
+    },
+
+    clearSession() {
       this.token = null
       this.user = null
       this.roles = []
       this.permissions = []
-      localStorage.removeItem('siges_token')
-      localStorage.removeItem('siges_user')
-      localStorage.removeItem('siges_roles')
-      localStorage.removeItem('siges_permissions')
+      clearAuthStorage()
     }
   }
 })
+
+function browserDeviceName() {
+  if (typeof navigator === 'undefined') return 'SIGES Web'
+
+  const platform = navigator.userAgentData?.platform || navigator.platform
+  return platform ? `SIGES Web - ${platform}`.slice(0, 120) : 'SIGES Web'
+}

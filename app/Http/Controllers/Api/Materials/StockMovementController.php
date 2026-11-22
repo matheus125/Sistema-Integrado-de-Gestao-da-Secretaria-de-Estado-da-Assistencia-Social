@@ -39,7 +39,7 @@ class StockMovementController extends Controller
             'destination' => ['nullable', 'string', 'max:160'],
             'reason' => ['nullable', 'string', 'max:160'],
             'movement_date' => ['required', 'date'],
-            'notes' => ['nullable', 'string'],
+            'notes' => ['nullable', 'string', 'max:4000'],
         ]);
         $data = $this->enforceDepartmentScope($request, $data);
 

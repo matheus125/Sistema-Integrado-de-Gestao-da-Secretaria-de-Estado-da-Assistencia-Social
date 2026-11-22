@@ -49,10 +49,10 @@
             </template>
             <template #body-cell-actions="props">
               <q-td :props="props">
-                <q-btn v-if="canEdit" flat round dense icon="edit" @click="openProduct(props.row)">
+                <q-btn v-if="canEdit" flat round dense icon="edit" aria-label="Editar produto" @click="openProduct(props.row)">
                   <q-tooltip>Editar produto</q-tooltip>
                 </q-btn>
-                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" @click="removeProduct(props.row)">
+                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" aria-label="Excluir produto" @click="removeProduct(props.row)">
                   <q-tooltip>Excluir produto</q-tooltip>
                 </q-btn>
               </q-td>
@@ -105,13 +105,13 @@
             </template>
             <template #body-cell-actions="props">
               <q-td :props="props">
-                <q-btn v-if="canEdit" flat round dense icon="swap_horiz" @click="openAssetMovement(props.row)">
+                <q-btn v-if="canEdit" flat round dense icon="swap_horiz" aria-label="Movimentar patrimônio" @click="openAssetMovement(props.row)">
                   <q-tooltip>Movimentar patrimonio</q-tooltip>
                 </q-btn>
-                <q-btn v-if="canEdit" flat round dense icon="edit" @click="openAsset(props.row)">
+                <q-btn v-if="canEdit" flat round dense icon="edit" aria-label="Editar patrimônio" @click="openAsset(props.row)">
                   <q-tooltip>Editar patrimonio</q-tooltip>
                 </q-btn>
-                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" @click="removeAsset(props.row)">
+                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" aria-label="Excluir patrimônio" @click="removeAsset(props.row)">
                   <q-tooltip>Excluir patrimonio</q-tooltip>
                 </q-btn>
               </q-td>
@@ -138,23 +138,23 @@
       </q-tab-panels>
     </section>
 
-    <q-dialog v-model="productDialog">
+    <q-dialog v-model="productDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card request-dialog">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">{{ productForm.id ? 'Editar produto' : 'Novo produto' }}</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar produto" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveProduct">
           <q-card-section class="form-grid">
-            <q-input v-model="productForm.internal_code" outlined label="Codigo interno" :rules="[required]" />
-            <q-input v-model="productForm.description" outlined label="Descricao" :rules="[required]" />
-            <q-input v-model="productForm.unit" outlined label="Unidade" :rules="[required]" />
-            <q-input v-model="productForm.supplier" outlined label="Fornecedor" />
-            <q-input v-model.number="productForm.quantity" outlined type="number" step="0.01" label="Quantidade" />
-            <q-input v-model.number="productForm.minimum_quantity" outlined type="number" step="0.01" label="Quantidade minima" />
-            <q-input v-model="productForm.location" outlined label="Localizacao" />
-            <q-select v-model="productForm.status" outlined label="Situacao" :options="productStatuses" emit-value map-options />
+            <q-input v-model="productForm.internal_code" v-bind="serverErrorProps('internal_code')" outlined label="Codigo interno" :maxlength="80" :rules="[required, maxLength(80)]" />
+            <q-input v-model="productForm.description" v-bind="serverErrorProps('description')" outlined label="Descricao" :maxlength="255" :rules="[required, maxLength(255)]" />
+            <q-input v-model="productForm.unit" v-bind="serverErrorProps('unit')" outlined label="Unidade" :maxlength="30" :rules="[required, maxLength(30)]" />
+            <q-input v-model="productForm.supplier" v-bind="serverErrorProps('supplier')" outlined label="Fornecedor" :maxlength="160" :rules="[maxLength(160)]" />
+            <q-input v-model.number="productForm.quantity" v-bind="serverErrorProps('quantity')" outlined type="number" step="0.01" label="Quantidade" />
+            <q-input v-model.number="productForm.minimum_quantity" v-bind="serverErrorProps('minimum_quantity')" outlined type="number" step="0.01" label="Quantidade minima" />
+            <q-input v-model="productForm.location" v-bind="serverErrorProps('location')" outlined label="Localizacao" :maxlength="160" :rules="[maxLength(160)]" />
+            <q-select v-model="productForm.status" v-bind="serverErrorProps('status')" outlined label="Situacao" :options="productStatuses" emit-value map-options />
             <div v-if="productForm.id" class="attachment-panel span-2">
               <div class="attachment-header">
                 <div>
@@ -164,6 +164,7 @@
                 <q-file
                   v-if="canEdit"
                   v-model="productAttachmentFile"
+                  v-bind="serverErrorProps('file')"
                   dense
                   outlined
                   clearable
@@ -180,7 +181,8 @@
                   unelevated
                   :disable="!productAttachmentFile"
                   :loading="uploadingProductAttachment"
-                  @click.prevent="uploadProductAttachment"
+              aria-label="Enviar anexo do produto"
+              @click.prevent="uploadProductAttachment"
                 >
                   <q-tooltip>Enviar anexo</q-tooltip>
                 </q-btn>
@@ -199,10 +201,10 @@
                   </q-item-section>
                   <q-item-section side>
                     <div class="row no-wrap q-gutter-xs">
-                      <q-btn flat round dense icon="download" @click.prevent="downloadAttachment(attachment)">
+                      <q-btn flat round dense icon="download" aria-label="Baixar anexo do produto" @click.prevent="downloadAttachment(attachment)">
                         <q-tooltip>Baixar anexo</q-tooltip>
                       </q-btn>
-                      <q-btn v-if="canEdit" flat round dense icon="delete" color="negative" @click.prevent="removeProductAttachment(attachment)">
+                      <q-btn v-if="canEdit" flat round dense icon="delete" color="negative" aria-label="Remover anexo do produto" @click.prevent="removeProductAttachment(attachment)">
                         <q-tooltip>Remover anexo</q-tooltip>
                       </q-btn>
                     </div>
@@ -220,25 +222,25 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="stockDialog">
+    <q-dialog v-model="stockDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">Movimentar estoque</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar movimentação de estoque" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveStockMovement">
           <q-card-section class="form-grid">
-            <q-select v-model="stockForm.product_id" outlined label="Produto" :options="productOptions" emit-value map-options :rules="[required]" class="span-2" />
-            <q-select v-model="stockForm.type" outlined label="Tipo" :options="stockTypes" emit-value map-options />
-            <q-input v-model.number="stockForm.quantity" outlined type="number" step="0.01" label="Quantidade" :rules="[required]" />
-            <q-input v-model="stockForm.movement_date" outlined type="date" label="Data" :rules="[required]" />
-            <q-select v-model="stockForm.department_id" outlined label="Setor" :options="departmentOptions" emit-value map-options clearable />
-            <q-input v-model="stockForm.supplier" outlined label="Fornecedor" />
-            <q-input v-model="stockForm.invoice_number" outlined label="Nota fiscal" />
-            <q-input v-model="stockForm.destination" outlined label="Destino" />
-            <q-input v-model="stockForm.reason" outlined label="Motivo" />
-            <q-input v-model="stockForm.notes" outlined type="textarea" label="Observacoes" class="span-2" />
+            <q-select v-model="stockForm.product_id" v-bind="serverErrorProps('product_id')" outlined label="Produto" :options="productOptions" emit-value map-options :rules="[required]" class="span-2" />
+            <q-select v-model="stockForm.type" v-bind="serverErrorProps('type')" outlined label="Tipo" :options="stockTypes" emit-value map-options />
+            <q-input v-model.number="stockForm.quantity" v-bind="serverErrorProps('quantity')" outlined type="number" step="0.01" label="Quantidade" :rules="[required]" />
+            <q-input v-model="stockForm.movement_date" v-bind="serverErrorProps('movement_date')" outlined type="date" label="Data" :rules="[required]" />
+            <q-select v-model="stockForm.department_id" v-bind="serverErrorProps('department_id')" outlined label="Setor" :options="departmentOptions" emit-value map-options clearable />
+            <q-input v-model="stockForm.supplier" v-bind="serverErrorProps('supplier')" outlined label="Fornecedor" :maxlength="160" :rules="[maxLength(160)]" />
+            <q-input v-model="stockForm.invoice_number" v-bind="serverErrorProps('invoice_number')" outlined label="Nota fiscal" :maxlength="80" :rules="[maxLength(80)]" />
+            <q-input v-model="stockForm.destination" v-bind="serverErrorProps('destination')" outlined label="Destino" :maxlength="160" :rules="[maxLength(160)]" />
+            <q-input v-model="stockForm.reason" v-bind="serverErrorProps('reason')" outlined label="Motivo" :maxlength="160" :rules="[maxLength(160)]" />
+            <q-input v-model="stockForm.notes" v-bind="serverErrorProps('notes')" outlined type="textarea" label="Observacoes" :maxlength="4000" counter :rules="[maxLength(4000)]" class="span-2" />
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat label="Cancelar" v-close-popup />
@@ -248,28 +250,28 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="assetDialog">
+    <q-dialog v-model="assetDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card request-dialog">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">{{ assetForm.id ? 'Editar patrimonio' : 'Novo patrimonio' }}</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar patrimônio" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveAsset">
           <q-card-section class="form-grid">
-            <q-input v-model="assetForm.asset_number" outlined label="Numero patrimonial" :rules="[required]" />
-            <q-input v-model="assetForm.description" outlined label="Descricao" :rules="[required]" />
-            <q-input v-model="assetForm.category" outlined label="Categoria" />
-            <q-input v-model="assetForm.brand" outlined label="Marca" />
-            <q-input v-model="assetForm.model" outlined label="Modelo" />
-            <q-input v-model="assetForm.serial_number" outlined label="Numero de serie" />
-            <q-input v-model="assetForm.acquired_at" outlined type="date" label="Data da aquisicao" />
-            <q-input v-model.number="assetForm.value" outlined type="number" step="0.01" label="Valor" />
-            <q-input v-model="assetForm.invoice_number" outlined label="Nota fiscal" />
-            <q-input v-model="assetForm.location" outlined label="Localizacao" />
-            <q-select v-model="assetForm.department_id" outlined label="Setor" :options="departmentOptions" emit-value map-options clearable />
-            <q-select v-model="assetForm.responsible_id" outlined label="Responsavel" :options="userOptions" emit-value map-options clearable />
-            <q-select v-model="assetForm.status" outlined label="Situacao" :options="assetStatuses" emit-value map-options />
+            <q-input v-model="assetForm.asset_number" v-bind="serverErrorProps('asset_number')" outlined label="Numero patrimonial" :maxlength="80" :rules="[required, maxLength(80)]" />
+            <q-input v-model="assetForm.description" v-bind="serverErrorProps('description')" outlined label="Descricao" :maxlength="255" :rules="[required, maxLength(255)]" />
+            <q-input v-model="assetForm.category" v-bind="serverErrorProps('category')" outlined label="Categoria" :maxlength="120" :rules="[maxLength(120)]" />
+            <q-input v-model="assetForm.brand" v-bind="serverErrorProps('brand')" outlined label="Marca" :maxlength="120" :rules="[maxLength(120)]" />
+            <q-input v-model="assetForm.model" v-bind="serverErrorProps('model')" outlined label="Modelo" :maxlength="120" :rules="[maxLength(120)]" />
+            <q-input v-model="assetForm.serial_number" v-bind="serverErrorProps('serial_number')" outlined label="Numero de serie" :maxlength="120" :rules="[maxLength(120)]" />
+            <q-input v-model="assetForm.acquired_at" v-bind="serverErrorProps('acquired_at')" outlined type="date" label="Data da aquisicao" />
+            <BrlCurrencyInput v-model="assetForm.value" v-bind="serverErrorProps('value')" outlined label="Valor" :max-integer-digits="10" />
+            <q-input v-model="assetForm.invoice_number" v-bind="serverErrorProps('invoice_number')" outlined label="Nota fiscal" :maxlength="80" :rules="[maxLength(80)]" />
+            <q-input v-model="assetForm.location" v-bind="serverErrorProps('location')" outlined label="Localizacao" :maxlength="160" :rules="[maxLength(160)]" />
+            <q-select v-model="assetForm.department_id" v-bind="serverErrorProps('department_id')" outlined label="Setor" :options="departmentOptions" emit-value map-options clearable />
+            <q-select v-model="assetForm.responsible_id" v-bind="serverErrorProps('responsible_id')" outlined label="Responsavel" :options="userOptions" emit-value map-options clearable />
+            <q-select v-model="assetForm.status" v-bind="serverErrorProps('status')" outlined label="Situacao" :options="assetStatuses" emit-value map-options />
             <div v-if="assetForm.id" class="attachment-panel span-2">
               <div class="attachment-header">
                 <div>
@@ -279,6 +281,7 @@
                 <q-file
                   v-if="canEdit"
                   v-model="assetAttachmentFile"
+                  v-bind="serverErrorProps('file')"
                   dense
                   outlined
                   clearable
@@ -295,7 +298,8 @@
                   unelevated
                   :disable="!assetAttachmentFile"
                   :loading="uploadingAssetAttachment"
-                  @click.prevent="uploadAssetAttachment"
+              aria-label="Enviar anexo do patrimônio"
+              @click.prevent="uploadAssetAttachment"
                 >
                   <q-tooltip>Enviar anexo</q-tooltip>
                 </q-btn>
@@ -314,10 +318,10 @@
                   </q-item-section>
                   <q-item-section side>
                     <div class="row no-wrap q-gutter-xs">
-                      <q-btn flat round dense icon="download" @click.prevent="downloadAttachment(attachment)">
+                      <q-btn flat round dense icon="download" aria-label="Baixar anexo do patrimônio" @click.prevent="downloadAttachment(attachment)">
                         <q-tooltip>Baixar anexo</q-tooltip>
                       </q-btn>
-                      <q-btn v-if="canEdit" flat round dense icon="delete" color="negative" @click.prevent="removeAssetAttachment(attachment)">
+                      <q-btn v-if="canEdit" flat round dense icon="delete" color="negative" aria-label="Remover anexo do patrimônio" @click.prevent="removeAssetAttachment(attachment)">
                         <q-tooltip>Remover anexo</q-tooltip>
                       </q-btn>
                     </div>
@@ -335,20 +339,20 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="assetMovementDialog">
+    <q-dialog v-model="assetMovementDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">Movimentar patrimonio</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar movimentação de patrimônio" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveAssetMovement">
           <q-card-section class="form-grid">
-            <q-select v-model="assetMovementForm.asset_id" outlined label="Patrimonio" :options="assetOptions" emit-value map-options :rules="[required]" class="span-2" />
-            <q-select v-model="assetMovementForm.type" outlined label="Tipo" :options="assetMovementTypes" emit-value map-options />
-            <q-select v-model="assetMovementForm.to_department_id" outlined label="Setor destino" :options="departmentOptions" emit-value map-options clearable />
-            <q-input v-model="assetMovementForm.moved_at" outlined type="datetime-local" label="Data/hora" :rules="[required]" class="span-2" />
-            <q-input v-model="assetMovementForm.notes" outlined type="textarea" label="Observacoes" class="span-2" />
+            <q-select v-model="assetMovementForm.asset_id" v-bind="serverErrorProps('asset_id')" outlined label="Patrimonio" :options="assetOptions" emit-value map-options :rules="[required]" class="span-2" />
+            <q-select v-model="assetMovementForm.type" v-bind="serverErrorProps('type')" outlined label="Tipo" :options="assetMovementTypes" emit-value map-options />
+            <q-select v-model="assetMovementForm.to_department_id" v-bind="serverErrorProps('to_department_id')" outlined label="Setor destino" :options="departmentOptions" emit-value map-options clearable />
+            <q-input v-model="assetMovementForm.moved_at" v-bind="serverErrorProps('moved_at')" outlined type="datetime-local" label="Data/hora" :rules="[required]" class="span-2" />
+            <q-input v-model="assetMovementForm.notes" v-bind="serverErrorProps('notes')" outlined type="textarea" label="Observacoes" :maxlength="4000" counter :rules="[maxLength(4000)]" class="span-2" />
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat label="Cancelar" v-close-popup />
@@ -364,8 +368,11 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiDownload, apiFetch, apiUpload } from '@/services/api'
+import { clearServerValidationErrors, serverErrorProps } from '@/services/server-validation'
 import { useAuthStore } from '@/stores/auth-store'
-import { formatDateTime } from '@/composables/useDateFormat'
+import { formatDate, formatDateTime } from '@/composables/useDateFormat'
+import { maxLength } from '@/utils/form-validation'
+import BrlCurrencyInput from '@/components/BrlCurrencyInput.vue'
 
 const $q = useQuasar()
 const auth = useAuthStore()
@@ -429,7 +436,7 @@ const productColumns = [
 ]
 
 const stockColumns = [
-  { name: 'movement_date', label: 'Data', field: 'movement_date', align: 'left' },
+  { name: 'movement_date', label: 'Data', field: row => formatDate(row.movement_date), align: 'left' },
   { name: 'type', label: 'Tipo', field: 'type', align: 'left' },
   { name: 'product', label: 'Produto', field: row => row.product?.description, align: 'left' },
   { name: 'quantity', label: 'Quantidade', field: row => formatNumber(row.quantity), align: 'right' },

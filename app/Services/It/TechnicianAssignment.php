@@ -4,21 +4,36 @@ namespace App\Services\It;
 
 use App\Models\Department;
 use App\Models\ItSupportTeam;
-use App\Models\ItTicket;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use LogicException;
 
 class TechnicianAssignment
 {
     public function nextTechnicianId(?array $ticketData = null): ?int
     {
-        return $this->rankedTechnicians($ticketData)->first()['id'] ?? null;
+        if (DB::transactionLevel() === 0) {
+            throw new LogicException('Automatic technician assignment must run inside a database transaction.');
+        }
+
+        $itDepartmentId = Department::query()
+            ->where('slug', 'gerencia-de-informatica')
+            ->lockForUpdate()
+            ->value('id');
+
+        return $this->rankedTechniciansForDepartment($itDepartmentId, $ticketData)->first()['id'] ?? null;
     }
 
     public function rankedTechnicians(?array $ticketData = null): Collection
     {
         $itDepartmentId = Department::query()->where('slug', 'gerencia-de-informatica')->value('id');
 
+        return $this->rankedTechniciansForDepartment($itDepartmentId, $ticketData);
+    }
+
+    private function rankedTechniciansForDepartment(?int $itDepartmentId, ?array $ticketData = null): Collection
+    {
         if (! $itDepartmentId) {
             return collect();
         }

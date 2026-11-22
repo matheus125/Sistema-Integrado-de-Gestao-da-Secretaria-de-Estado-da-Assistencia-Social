@@ -17,19 +17,23 @@
           <q-card-section class="q-gutter-md">
             <q-input
               v-model="form.email"
+              v-bind="serverErrorProps('email')"
               label="Email"
               type="email"
               autocomplete="email"
               outlined
-              :rules="[value => !!value || 'Informe o email']"
+              :maxlength="180"
+              :rules="[value => !!value || 'Informe o email', maxLength(180)]"
             />
             <q-input
               v-model="form.password"
+              v-bind="serverErrorProps('password')"
               label="Senha"
               :type="showPassword ? 'text' : 'password'"
               autocomplete="current-password"
               outlined
-              :rules="[value => !!value || 'Informe a senha']"
+              :maxlength="255"
+              :rules="[value => !!value || 'Informe a senha', maxLength(255)]"
             >
               <template #append>
                 <q-btn
@@ -37,6 +41,7 @@
                   dense
                   round
                   :icon="showPassword ? 'visibility_off' : 'visibility'"
+                  :aria-label="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
                   @click="showPassword = !showPassword"
                 >
                   <q-tooltip>{{ showPassword ? 'Ocultar senha' : 'Mostrar senha' }}</q-tooltip>
@@ -68,6 +73,8 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from '@/stores/auth-store'
+import { serverErrorProps } from '@/services/server-validation'
+import { maxLength } from '@/utils/form-validation'
 
 const $q = useQuasar()
 const router = useRouter()

@@ -87,7 +87,7 @@ class AssetController extends Controller
             'model' => ['nullable', 'string', 'max:120'],
             'serial_number' => ['nullable', 'string', 'max:120'],
             'acquired_at' => ['nullable', 'date'],
-            'value' => ['nullable', 'numeric', 'min:0'],
+            'value' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'invoice_number' => ['nullable', 'string', 'max:80'],
             'location' => ['nullable', 'string', 'max:160'],
             'status' => ['required', Rule::in(['ativo', 'manutencao', 'baixado', 'inativo'])],

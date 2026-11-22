@@ -53,7 +53,7 @@
 
         <template #body-cell-actions="props">
           <q-td :props="props">
-            <q-btn flat round dense icon="visibility" @click="inspect(props.row)">
+            <q-btn flat round dense icon="visibility" aria-label="Ver detalhes da auditoria" @click="inspect(props.row)">
               <q-tooltip>Ver detalhes</q-tooltip>
             </q-btn>
           </q-td>
@@ -68,7 +68,7 @@
             <div class="text-h6">Evento #{{ selected?.id }}</div>
             <div class="text-caption text-grey-7">{{ formatDateTime(selected?.created_at) }}</div>
           </div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar detalhes da auditoria" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-card-section v-if="selected" class="q-gutter-md">

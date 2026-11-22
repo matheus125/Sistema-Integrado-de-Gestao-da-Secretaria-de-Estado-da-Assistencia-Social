@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class DepartmentController extends Controller
 {
@@ -68,11 +69,34 @@ class DepartmentController extends Controller
 
     private function validatedData(Request $request, ?Department $department = null): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'parent_id' => ['nullable', 'integer', 'exists:departments,id'],
             'name' => ['required', 'string', 'max:160'],
             'slug' => ['nullable', 'string', 'max:180', Rule::unique('departments', 'slug')->ignore($department)],
             'active' => ['boolean'],
         ]);
+
+        if ($department && filled($data['parent_id'] ?? null)) {
+            $this->validateParentHierarchy($department, (int) $data['parent_id']);
+        }
+
+        return $data;
+    }
+
+    private function validateParentHierarchy(Department $department, int $parentId): void
+    {
+        $parent = Department::query()->find($parentId);
+        $visited = [];
+
+        while ($parent) {
+            if ($parent->is($department) || in_array($parent->id, $visited, true)) {
+                throw ValidationException::withMessages([
+                    'parent_id' => ['Um setor não pode ser subordinado a si mesmo ou a um de seus subsetores.'],
+                ]);
+            }
+
+            $visited[] = $parent->id;
+            $parent = $parent->parent;
+        }
     }
 }

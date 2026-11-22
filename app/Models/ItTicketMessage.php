@@ -16,6 +16,7 @@ class ItTicketMessage extends Model
         'direction',
         'visibility',
         'message',
+        'provider_message_id',
         'metadata',
     ];
 

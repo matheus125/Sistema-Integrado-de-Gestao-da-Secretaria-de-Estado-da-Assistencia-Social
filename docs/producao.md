@@ -23,6 +23,8 @@ ser definidos. Não copiar o `.env` local como configuração pronta de produç�
   opção `--verify` restaura em um banco novo e compara todo o conteúdo.
 - `php artisan siges:production-check`: diagnóstico de configuração, somente leitura.
 - `scripts/browser-smoke.cjs`: navegação autenticada e downloads no navegador.
+- `scripts/test-mysql-concurrency.php`: cria um schema MySQL descartável, executa
+  os cenários multiprocesso da FIX-013 e remove o schema em qualquer resultado.
 
 O frontend compilado usa `/api` por padrão; desenvolvimento mantém a porta 8000.
 `QCLI_API_URL` permite substituir o endereço no build quando a arquitetura exigir.
@@ -70,6 +72,76 @@ Mudanças de código/configuração exigem reinício gracioso dos workers.
 O servidor de desenvolvimento (`artisan serve` e `quasar dev`) não é o serviço
 definitivo. O diagnóstico não substitui o teste de DNS, certificado ou serviços.
 
+### Regressão de concorrência MySQL
+
+Execute em desenvolvimento/homologação com permissão temporária para criar e
+remover schemas, nunca com as credenciais limitadas do processo web:
+
+```bash
+php scripts/test-mysql-concurrency.php
+```
+
+O executor aceita como alvo destrutivo apenas o schema aleatório que ele próprio
+cria com prefixo `siges_fix013_`. Ele não migra nem altera o banco configurado da
+aplicação e remove o schema descartável em `finally`.
+
+### Sessões e tokens Sanctum
+
+Revise antes da publicação:
+
+```dotenv
+SANCTUM_TOKEN_EXPIRATION_MINUTES=480
+SANCTUM_TOKEN_IDLE_TIMEOUT_MINUTES=120
+SANCTUM_MAX_TOKENS_PER_USER=5
+SANCTUM_PRUNE_EXPIRED_HOURS=24
+```
+
+O parâmetro `session_timeout_minutes` administrado no sistema prevalece sobre o
+fallback de inatividade do ambiente. Mantenha o scheduler ativo para executar
+`siges:prune-tokens` diariamente. Reduções de timeout afetam tokens existentes na
+requisição seguinte; alterações de senha e bloqueio de usuário revogam suas
+sessões. O Bearer token fica apenas em `sessionStorage`, portanto fechar a sessão
+do navegador exige novo login. A migração futura para cookie `HttpOnly` depende
+da homologação E2E descrita em `docs/auditoria/10-autenticacao-sessoes.md`.
+
+### Verify Token do webhook WhatsApp
+
+Defina `WHATSAPP_BUSINESS_VERIFY_TOKEN` com um valor exclusivo antes do primeiro
+seeding e antes de habilitar a integração. Gere um token sem reutilizar senhas ou
+outros segredos:
+
+```bash
+openssl rand -hex 32
+```
+
+O valor precisa ter pelo menos 32 caracteres. O seeder recusa valores fracos ou
+padrão e não fornece fallback. Em instalações existentes, salve o novo token em
+**Configurações > WhatsApp**, atualize o mesmo valor na configuração do webhook
+da Meta e só então habilite a integração. `php artisan siges:production-check`
+falha enquanto o token estiver ausente, fraco ou igual ao padrão legado. Não
+confunda o Verify Token com `WHATSAPP_BUSINESS_APP_SECRET`, usado para validar a
+assinatura dos eventos recebidos.
+
+### Criptografia dos segredos de configuracao
+
+Depois de aplicar a migration que adiciona `encrypted_value`, faça um backup
+verificado antes de converter valores legados. A simulacao nao altera dados:
+
+```bash
+php artisan siges:encrypt-secrets
+php artisan siges:encrypt-secrets --apply --backup=/caminho/backup-verificado.sql
+```
+
+O comando nunca imprime os valores, exige um arquivo de backup existente e
+verifica o round-trip de cada segredo dentro de transacao. Preserve a `APP_KEY`
+junto ao plano de recuperacao: sem ela, os valores e backups permanecem
+ilegíveis. Para rotacionar a chave, mantenha temporariamente a chave anterior em
+`APP_PREVIOUS_KEYS`, configure a nova `APP_KEY`, limpe o cache de configuracao e
+execute `php artisan siges:encrypt-secrets --apply --rotate
+--backup=/caminho/novo-backup-verificado.sql`. Remova `APP_PREVIOUS_KEYS` somente
+depois da verificacao funcional e de um novo backup. Nunca execute `key:generate`
+sobre uma base existente.
+
 ## Backups automáticos e recuperação
 
 Criar `/var/backups/siges` com modo 0700 e proprietário `www-data` antes de
@@ -106,11 +178,48 @@ banco ativo; deixa a cópia disponível para inspeção. A implementação atual
 calcula hashes em memória e é adequada ao volume local; reavaliar para bancos
 grandes. A rotina cobre as tabelas atuais, sem stored routines/events externos.
 
+Para ensaios descartáveis, `--isolated-test` exige `APP_ENV=testing`, um banco
+com prefixo `siges_fix008_`, `--verify` e `--cleanup-restore`. Esse modo não
+copia `.env`, credenciais ou anexos locais, valida contagens/hashes, foreign
+keys, migrations e `CHECK TABLE`, e remove o banco restaurado ao final. O banco
+fonte de teste também deve ser removido pelo operador depois do ensaio.
+
 No desastre real, restaurar para um banco vazio usando `mysql`, conferir hashes
 do manifesto, restaurar `storage/app` e APP_KEY correspondente, testar o sistema
 isoladamente e depois apontar a aplicação ao banco recuperado. Novas gravações
 posteriores ao backup exigem recuperação adicional; backup diário não implica
 perda máxima zero. Nunca retornar ao SQLite antigo sem reconciliar alterações.
+
+## Auditoria de telefones legados
+
+Antes de considerar qualquer constraint de formato para telefones, execute:
+
+```bash
+php artisan siges:audit-phones --fail-on-invalid
+```
+
+O comando não exibe números nem altera dados. Corrija os registros apontados por
+meio do fluxo administrativo e repita a auditoria até obter retorno aprovado.
+
+Para placas, execute também:
+
+```bash
+php artisan siges:audit-plates --fail-on-issues
+```
+
+O comando informa apenas quantidades de placas inválidas, não normalizadas ou
+duplicadas pela forma canônica. Nenhuma placa é exibida ou alterada.
+
+Para CNH e RENAVAM, execute:
+
+```bash
+php artisan siges:audit-transport-identifiers --fail-on-issues
+```
+
+O comando valida o checksum dos RENAVAM e contabiliza, sem exibir valores, as
+CNHs pendentes de classificação institucional. Não altere nem migre CNHs até que
+seja definido se o campo representa registro nacional, número do espelho ou
+formulário RENACH.
 
 ## Evidências locais em 10/09/2026
 

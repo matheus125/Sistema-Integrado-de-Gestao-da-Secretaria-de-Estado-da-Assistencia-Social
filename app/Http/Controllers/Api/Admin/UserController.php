@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Rules\BrazilianPhoneRule;
+use App\Support\BrazilianPhone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -56,7 +57,14 @@ class UserController extends Controller
             unset($data['password']);
         }
 
+        $mustRevokeTokens = array_key_exists('password', $data)
+            || ($user->status === 'ativo' && $data['status'] !== 'ativo');
+
         $user->update($data);
+
+        if ($mustRevokeTokens) {
+            $user->tokens()->delete();
+        }
 
         if (is_array($roles)) {
             $user->syncRoles($roles);
@@ -82,18 +90,24 @@ class UserController extends Controller
 
     private function validatedData(Request $request, ?User $user = null): array
     {
-        $passwordRule = $user ? ['nullable', 'string', 'min:8'] : ['required', 'string', 'min:8'];
+        $passwordRule = $user ? ['nullable', 'string', 'min:8', 'max:255'] : ['required', 'string', 'min:8', 'max:255'];
 
-        return $request->validate([
+        $data = $request->validate([
             'name' => ['required', 'string', 'max:160'],
             'email' => ['required', 'email', 'max:180', Rule::unique('users', 'email')->ignore($user)],
             'password' => $passwordRule,
             'department_id' => ['nullable', 'integer', 'exists:departments,id'],
-            'phone' => ['nullable', 'string', 'max:40'],
+            'phone' => ['nullable', 'string', 'max:25', new BrazilianPhoneRule],
             'position' => ['nullable', 'string', 'max:120'],
             'status' => ['required', Rule::in(['ativo', 'inativo', 'afastado'])],
             'roles' => ['array'],
             'roles.*' => ['string', Rule::exists('roles', 'name')],
         ]);
+
+        if (array_key_exists('phone', $data)) {
+            $data['phone'] = BrazilianPhone::normalize($data['phone']);
+        }
+
+        return $data;
     }
 }

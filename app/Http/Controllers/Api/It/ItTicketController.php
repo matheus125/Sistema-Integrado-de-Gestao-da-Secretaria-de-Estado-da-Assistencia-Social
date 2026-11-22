@@ -4,18 +4,22 @@ namespace App\Http\Controllers\Api\It;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attachment;
-use App\Models\ItTicket;
 use App\Models\ItChecklistTemplate;
+use App\Models\ItServiceCatalog;
+use App\Models\ItSupportTeam;
+use App\Models\ItTicket;
+use App\Models\ItTicketApproval;
 use App\Models\ItTicketCategory;
 use App\Models\ItTicketStatusHistory;
-use App\Models\ItServiceCatalog;
-use App\Models\ItTicketApproval;
-use App\Services\It\ItNotificationService;
+use App\Models\User;
+use App\Rules\BrazilianPhoneRule;
 use App\Services\It\ItAutomationService;
+use App\Services\It\ItNotificationService;
 use App\Services\It\ItPriorityCalculator;
 use App\Services\It\SlaService;
 use App\Services\It\TechnicianAssignment;
 use App\Services\It\WhatsappOutboundService;
+use App\Support\BrazilianPhone;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -44,9 +48,7 @@ class ItTicketController extends Controller
         private readonly ItAutomationService $automations,
         private readonly ItPriorityCalculator $priorityCalculator,
         private readonly WhatsappOutboundService $whatsapp,
-    )
-    {
-    }
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -158,6 +160,7 @@ class ItTicketController extends Controller
                 ? Activity::query()->where('subject_type', ItTicket::class)->where('subject_id', $ticket->id)->latest()->get()->map(fn ($item) => ['type' => 'audit', 'at' => $item->created_at, 'data' => $item])
                 : collect())
             ->sortByDesc('at')->values();
+
         return response()->json(['data' => $events]);
     }
 
@@ -170,6 +173,7 @@ class ItTicketController extends Controller
         $from = $ticket->status;
         $ticket->update(['status' => 'cancelado', 'cancelled_at' => now(), 'cancelled_by' => $request->user()->id, 'cancellation_reason' => $data['reason']]);
         $this->recordStatusHistory($request, $ticket, $from, 'cancelado', $data['reason']);
+
         return response()->json($this->loadTicketRelations($ticket->fresh()));
     }
 
@@ -186,10 +190,10 @@ class ItTicketController extends Controller
         if (in_array($data['action'], ['assign', 'team'], true) && ! $data['value']) {
             throw ValidationException::withMessages(['value' => 'Informe o responsável ou equipe.']);
         }
-        if ($data['action'] === 'assign' && ! \App\Models\User::query()->whereKey($data['value'])->exists()) {
+        if ($data['action'] === 'assign' && ! User::query()->whereKey($data['value'])->exists()) {
             throw ValidationException::withMessages(['value' => 'Técnico inválido.']);
         }
-        if ($data['action'] === 'team' && ! \App\Models\ItSupportTeam::query()->whereKey($data['value'])->exists()) {
+        if ($data['action'] === 'team' && ! ItSupportTeam::query()->whereKey($data['value'])->exists()) {
             throw ValidationException::withMessages(['value' => 'Equipe inválida.']);
         }
         if ($data['action'] === 'priority' && ! in_array($data['value'], ['baixa', 'media', 'alta', 'urgente'], true)) {
@@ -202,7 +206,9 @@ class ItTicketController extends Controller
         foreach (ItTicket::query()->whereIn('id', $data['ticket_ids'])->get() as $ticket) {
             $this->authorizeTicketAccess($request, $ticket);
             if ($data['action'] === 'close') {
-                if (in_array($ticket->status, ['encerrado', 'cancelado'], true)) continue;
+                if (in_array($ticket->status, ['encerrado', 'cancelado'], true)) {
+                    continue;
+                }
                 $from = $ticket->status;
                 $ticket->update(['status' => 'encerrado', 'closed_at' => now(), 'closed_by' => $request->user()->id]);
                 $this->recordStatusHistory($request, $ticket, $from, 'encerrado', $data['reason'] ?? 'Encerramento em massa.');
@@ -217,6 +223,7 @@ class ItTicketController extends Controller
             activity('informatica')->causedBy($request->user())->performedOn($ticket)->log('ação em massa: '.$data['action']);
             $updated++;
         }
+
         return response()->json(['updated' => $updated]);
     }
 
@@ -271,7 +278,7 @@ class ItTicketController extends Controller
         if (! empty($data['service_catalog_id'])) {
             $service = ItServiceCatalog::query()->find($data['service_catalog_id']);
             if ($service?->requires_approval) {
-                $approver = $service->approval_role ? \App\Models\User::role($service->approval_role)->first() : null;
+                $approver = $service->approval_role ? User::role($service->approval_role)->first() : null;
                 $ticket->update(['approval_status' => 'pendente', 'approval_requested_at' => now()]);
                 ItTicketApproval::create([
                     'ticket_id' => $ticket->id,
@@ -283,8 +290,8 @@ class ItTicketController extends Controller
             }
         }
 
-            activity('informatica')->causedBy($request->user())->performedOn($ticket)->log('chamado aberto');
-            $this->automations->run($ticket->fresh(), 'ticket_created');
+        activity('informatica')->causedBy($request->user())->performedOn($ticket)->log('chamado aberto');
+        $this->automations->run($ticket->fresh(), 'ticket_created');
 
         return response()->json($ticket, 201);
     }
@@ -507,9 +514,9 @@ class ItTicketController extends Controller
             'asset_ids.*' => ['integer', 'exists:assets,id'],
             'type' => ['sometimes', Rule::in(array_keys(ItTicket::TYPES))],
             'requester_name' => [$required, 'string', 'max:160'],
-            'requester_phone' => ['nullable', 'string', 'max:40'],
+            'requester_phone' => ['nullable', 'string', 'max:25', new BrazilianPhoneRule],
             'department_name' => ['nullable', 'string', 'max:160'],
-            'description' => [$required, 'string'],
+            'description' => [$required, 'string', 'max:10000'],
             'resolution_summary' => ['nullable', 'string', 'max:1000'],
             'requires_follow_up' => ['nullable', 'boolean'],
             'recurring_problem' => ['nullable', 'boolean'],
@@ -537,6 +544,10 @@ class ItTicketController extends Controller
 
         if (array_key_exists('category_id', $data) && ! $data['category_id'] && ! array_key_exists('category', $data)) {
             $data['category'] = null;
+        }
+
+        if (array_key_exists('requester_phone', $data)) {
+            $data['requester_phone'] = BrazilianPhone::normalize($data['requester_phone']);
         }
 
         return $data;

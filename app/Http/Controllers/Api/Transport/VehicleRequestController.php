@@ -81,13 +81,17 @@ class VehicleRequestController extends Controller
 
         $data = $this->validatedData($request);
         $data = $this->enforceDepartmentScope($request, $data);
-        $this->ensureResourcesAreAvailable($data);
 
-        $vehicleRequest = VehicleRequest::create([
-            ...$data,
-            'requested_by' => $request->user()->id,
-            'status' => 'solicitacao',
-        ])->load(['department:id,name', 'vehicle:id,plate,brand,model', 'driver:id,name', 'requester:id,name']);
+        $vehicleRequest = DB::transaction(function () use ($request, $data): VehicleRequest {
+            $this->lockSchedulingResources($data);
+            $this->ensureResourcesAreAvailable($data);
+
+            return VehicleRequest::create([
+                ...$data,
+                'requested_by' => $request->user()->id,
+                'status' => 'solicitacao',
+            ]);
+        }, 3)->load(['department:id,name', 'vehicle:id,plate,brand,model', 'driver:id,name', 'requester:id,name']);
 
         activity('transporte')->causedBy($request->user())->performedOn($vehicleRequest)->log('solicitacao de veiculo criada');
         $this->recordStatusHistory($request, $vehicleRequest, null, 'solicitacao');
@@ -103,11 +107,19 @@ class VehicleRequestController extends Controller
 
         $data = $this->validatedData($request, partial: true);
         $data = $this->enforceDepartmentScope($request, $data);
-        $this->ensureResourcesAreAvailable([
-            ...$vehicleRequest->only(['vehicle_id', 'driver_id', 'date', 'departure_time', 'expected_arrival_time', 'passengers_count', 'initial_km', 'final_km']),
-            ...$data,
-        ], $vehicleRequest);
-        $vehicleRequest->update($data);
+
+        DB::transaction(function () use ($vehicleRequest, $data): void {
+            VehicleRequest::query()->whereKey($vehicleRequest->id)->lockForUpdate()->firstOrFail();
+            $vehicleRequest->refresh();
+            $schedule = [
+                ...$vehicleRequest->only(['vehicle_id', 'driver_id', 'date', 'departure_time', 'expected_arrival_time', 'passengers_count', 'initial_km', 'final_km']),
+                ...$data,
+            ];
+
+            $this->lockSchedulingResources($schedule, $vehicleRequest);
+            $this->ensureResourcesAreAvailable($schedule, $vehicleRequest);
+            $vehicleRequest->update($data);
+        }, 3);
 
         activity('transporte')->causedBy($request->user())->performedOn($vehicleRequest)->log('solicitacao de veiculo atualizada');
 
@@ -162,6 +174,7 @@ class VehicleRequestController extends Controller
         $data = $this->validatedChecklistData($request, 'saida');
 
         DB::transaction(function () use ($request, $vehicleRequest, $data) {
+            VehicleRequest::query()->whereKey($vehicleRequest->id)->lockForUpdate()->firstOrFail();
             $vehicleRequest->refresh();
 
             if ($vehicleRequest->status !== 'aprovada') {
@@ -190,6 +203,7 @@ class VehicleRequestController extends Controller
         $data = $this->validatedChecklistData($request, 'retorno');
 
         DB::transaction(function () use ($request, $vehicleRequest, $data) {
+            VehicleRequest::query()->whereKey($vehicleRequest->id)->lockForUpdate()->firstOrFail();
             $vehicleRequest->refresh();
 
             if ($vehicleRequest->status !== 'em_deslocamento') {
@@ -397,6 +411,7 @@ class VehicleRequestController extends Controller
     private function transitionRequest(Request $request, VehicleRequest $vehicleRequest, string $nextStatus, ?string $reason = null): void
     {
         DB::transaction(function () use ($request, $vehicleRequest, $nextStatus, $reason) {
+            VehicleRequest::query()->whereKey($vehicleRequest->id)->lockForUpdate()->firstOrFail();
             $vehicleRequest->refresh();
             $currentStatus = $vehicleRequest->status;
             $allowedStatuses = $this->availableTransitions($request, $vehicleRequest);
@@ -408,6 +423,7 @@ class VehicleRequestController extends Controller
             }
 
             if (in_array($nextStatus, ['aprovada', 'em_deslocamento'], true)) {
+                $this->lockSchedulingResources($vehicleRequest->toArray(), $vehicleRequest);
                 $this->ensureResourcesAreAvailable($vehicleRequest->toArray(), $vehicleRequest);
             }
 
@@ -650,7 +666,7 @@ class VehicleRequestController extends Controller
             'department_id' => [$required, 'integer', 'exists:departments,id'],
             'vehicle_id' => ['nullable', 'integer', 'exists:vehicles,id'],
             'driver_id' => ['nullable', 'integer', 'exists:drivers,id'],
-            'route_description' => [$required, 'string'],
+            'route_description' => [$required, 'string', 'max:4000'],
             'origin' => [$required, 'string', 'max:160'],
             'destination' => [$required, 'string', 'max:160'],
             'date' => [$required, 'date'],
@@ -660,7 +676,7 @@ class VehicleRequestController extends Controller
             'responsible' => [$required, 'string', 'max:160'],
             'initial_km' => ['nullable', 'integer', 'min:0'],
             'final_km' => ['nullable', 'integer', 'min:0'],
-            'notes' => ['nullable', 'string'],
+            'notes' => ['nullable', 'string', 'max:4000'],
             'status' => ['sometimes', Rule::in(['solicitacao', 'analise', 'aprovada', 'em_deslocamento', 'concluida', 'cancelada', 'rejeitada'])],
         ]);
     }
@@ -694,6 +710,23 @@ class VehicleRequestController extends Controller
                 'driver_id' => ['Este motorista ja possui agendamento em conflito neste periodo.'],
             ]);
         }
+    }
+
+    private function lockSchedulingResources(array $data, ?VehicleRequest $current = null): void
+    {
+        collect([$current?->vehicle_id, $data['vehicle_id'] ?? null])
+            ->filter()
+            ->map(fn (mixed $id): int => (int) $id)
+            ->unique()
+            ->sort()
+            ->each(fn (int $id) => Vehicle::query()->whereKey($id)->lockForUpdate()->first());
+
+        collect([$current?->driver_id, $data['driver_id'] ?? null])
+            ->filter()
+            ->map(fn (mixed $id): int => (int) $id)
+            ->unique()
+            ->sort()
+            ->each(fn (int $id) => Driver::query()->whereKey($id)->lockForUpdate()->first());
     }
 
     private function ensureKmSequence(array $data): void

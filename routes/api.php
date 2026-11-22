@@ -1,56 +1,61 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Admin\AdminOptionController;
 use App\Http\Controllers\Api\Admin\DepartmentController;
 use App\Http\Controllers\Api\Admin\RoleController;
 use App\Http\Controllers\Api\Admin\UserController;
-use App\Http\Controllers\Api\Audit\AuditLogController;
 use App\Http\Controllers\Api\AttachmentController;
+use App\Http\Controllers\Api\Audit\AuditLogController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\GlobalSearchController;
-use App\Http\Controllers\Api\It\ItOptionController;
+use App\Http\Controllers\Api\It\ItAutomationRuleController;
+use App\Http\Controllers\Api\It\ItChecklistTemplateController;
 use App\Http\Controllers\Api\It\ItDashboardController;
 use App\Http\Controllers\Api\It\ItKnowledgeArticleController;
-use App\Http\Controllers\Api\It\ItResponseTemplateController;
-use App\Http\Controllers\Api\It\ItAutomationRuleController;
-use App\Http\Controllers\Api\It\ItServiceCatalogController;
-use App\Http\Controllers\Api\It\ItTicketApprovalController;
+use App\Http\Controllers\Api\It\ItOptionController;
 use App\Http\Controllers\Api\It\ItPreventiveMaintenanceController;
+use App\Http\Controllers\Api\It\ItResponseTemplateController;
+use App\Http\Controllers\Api\It\ItServiceCatalogController;
 use App\Http\Controllers\Api\It\ItSlaCalendarController;
 use App\Http\Controllers\Api\It\ItSlaRuleController;
 use App\Http\Controllers\Api\It\ItSupportTeamController;
+use App\Http\Controllers\Api\It\ItTicketApprovalController;
 use App\Http\Controllers\Api\It\ItTicketCategoryController;
 use App\Http\Controllers\Api\It\ItTicketController;
 use App\Http\Controllers\Api\It\ItTicketEvaluationController;
 use App\Http\Controllers\Api\It\ItTicketMessageController;
 use App\Http\Controllers\Api\It\ItTicketToolController;
-use App\Http\Controllers\Api\It\ItChecklistTemplateController;
-use App\Http\Controllers\Api\ModuleController;
-use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\It\WhatsappTemplateController;
 use App\Http\Controllers\Api\Materials\AssetController;
 use App\Http\Controllers\Api\Materials\AssetMovementController;
 use App\Http\Controllers\Api\Materials\MaterialOptionController;
 use App\Http\Controllers\Api\Materials\ProductController;
 use App\Http\Controllers\Api\Materials\StockMovementController;
-use App\Http\Controllers\Api\Transport\DriverController;
-use App\Http\Controllers\Api\Transport\VehicleMaintenanceController;
-use App\Http\Controllers\Api\Transport\VehicleController;
-use App\Http\Controllers\Api\Transport\VehicleRequestController;
+use App\Http\Controllers\Api\ModuleController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\Reports\ReportController;
 use App\Http\Controllers\Api\Settings\SettingController;
+use App\Http\Controllers\Api\Transport\DriverController;
+use App\Http\Controllers\Api\Transport\VehicleController;
+use App\Http\Controllers\Api\Transport\VehicleMaintenanceController;
+use App\Http\Controllers\Api\Transport\VehicleRequestController;
 use App\Http\Controllers\Api\Webhooks\WhatsappWebhookController;
-use App\Http\Controllers\Api\It\WhatsappTemplateController;
+use App\Http\Middleware\VerifyWhatsappWebhookSignature;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::get('/webhooks/whatsapp', [WhatsappWebhookController::class, 'verify']);
-Route::post('/webhooks/whatsapp', [WhatsappWebhookController::class, 'receive']);
+Route::post('/webhooks/whatsapp', [WhatsappWebhookController::class, 'receive'])
+    ->middleware(VerifyWhatsappWebhookSignature::class);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::post('/auth/logout-all', [AuthController::class, 'logoutAll']);
+    Route::get('/auth/devices', [AuthController::class, 'devices']);
+    Route::delete('/auth/devices/{token}', [AuthController::class, 'revokeDevice'])->whereNumber('token');
 
     Route::get('/modules', [ModuleController::class, 'index']);
     Route::get('/dashboard', DashboardController::class)->middleware('permission:dashboard.visualizar');

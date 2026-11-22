@@ -39,9 +39,9 @@ class AssetMovementController extends Controller
 
         $data = $request->validate([
             'asset_id' => ['required', 'integer', 'exists:assets,id'],
-            'to_department_id' => ['nullable', 'integer', 'exists:departments,id'],
+            'to_department_id' => ['nullable', 'required_if:type,transferencia', 'integer', 'exists:departments,id'],
             'type' => ['required', Rule::in(['transferencia', 'manutencao', 'retorno', 'baixa'])],
-            'notes' => ['nullable', 'string'],
+            'notes' => ['nullable', 'string', 'max:4000'],
             'moved_at' => ['required', 'date'],
         ]);
 
@@ -51,7 +51,7 @@ class AssetMovementController extends Controller
             $fromDepartmentId = $asset->department_id;
 
             if ($data['type'] === 'transferencia') {
-                $asset->department_id = $data['to_department_id'];
+                $asset->department_id = $data['to_department_id'] ?? null;
                 $asset->status = 'ativo';
             } elseif ($data['type'] === 'manutencao') {
                 $asset->status = 'manutencao';

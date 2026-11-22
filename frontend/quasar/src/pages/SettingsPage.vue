@@ -36,14 +36,19 @@
                   <q-badge v-if="setting.is_secret" color="warning" outline>sigiloso</q-badge>
                 </div>
 
-                <q-toggle
+                <q-field
                   v-if="setting.type === 'boolean'"
-                  v-model="setting.value"
-                  :label="setting.value ? 'Habilitado' : 'Desabilitado'"
-                />
+                  borderless
+                  v-bind="serverErrorProps(`settings.${settingIndex(setting)}.value`, setting.key)"
+                >
+                  <template #control>
+                    <q-toggle v-model="setting.value" :label="setting.value ? 'Habilitado' : 'Desabilitado'" />
+                  </template>
+                </q-field>
                 <q-input
                   v-else-if="setting.type === 'number'"
                   v-model.number="setting.value"
+                  v-bind="serverErrorProps(`settings.${settingIndex(setting)}.value`, setting.key)"
                   outlined
                   type="number"
                   dense
@@ -51,9 +56,12 @@
                 <q-input
                   v-else
                   v-model="setting.value"
+                  v-bind="serverErrorProps(`settings.${settingIndex(setting)}.value`, setting.key)"
                   outlined
                   dense
                   :type="setting.type === 'password' ? 'password' : 'text'"
+                  :maxlength="4096"
+                  :rules="[maxLength(4096)]"
                   :placeholder="setting.has_secret ? 'Valor sigiloso ja cadastrado' : ''"
                 />
               </q-card-section>
@@ -69,7 +77,9 @@
 import { computed, onMounted, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { API_URL, apiFetch } from '@/services/api'
+import { serverErrorProps } from '@/services/server-validation'
 import { useAuthStore } from '@/stores/auth-store'
+import { maxLength } from '@/utils/form-validation'
 
 const $q = useQuasar()
 const auth = useAuthStore()
@@ -123,6 +133,10 @@ async function saveSettings() {
   } finally {
     saving.value = false
   }
+}
+
+function settingIndex(setting) {
+  return Object.values(groupedSettings.value).flat().indexOf(setting)
 }
 
 function groupLabel(group) {

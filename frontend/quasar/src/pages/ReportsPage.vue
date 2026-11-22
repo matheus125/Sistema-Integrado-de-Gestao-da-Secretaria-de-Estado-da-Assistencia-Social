@@ -15,13 +15,14 @@
     <section class="content-shell module-content">
       <q-card flat bordered class="work-panel q-mb-md">
         <q-card-section class="report-filters">
-          <q-select v-model="filters.report" outlined label="Relatorio" :options="reportOptions" emit-value map-options @update:model-value="loadPreview" />
-          <q-input v-model="filters.date_from" outlined type="date" label="De" />
-          <q-input v-model="filters.date_to" outlined type="date" label="Ate" />
-          <q-input v-model="filters.status" outlined label="Status/Tipo/Modulo" clearable />
+          <q-select v-model="filters.report" v-bind="serverErrorProps('report')" outlined label="Relatorio" :options="reportOptions" emit-value map-options @update:model-value="loadPreview" />
+          <q-input v-model="filters.date_from" v-bind="serverErrorProps('date_from')" outlined type="date" label="De" />
+          <q-input v-model="filters.date_to" v-bind="serverErrorProps('date_to')" outlined type="date" label="Ate" />
+          <q-input v-model="filters.status" v-bind="serverErrorProps('status')" outlined label="Status/Tipo/Modulo" clearable />
           <q-select
             v-if="filters.report === 'it_tickets'"
             v-model="filters.type"
+            v-bind="serverErrorProps('type')"
             outlined
             label="Tipo de chamado"
             :options="itTicketTypeOptions"
@@ -60,7 +61,9 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useQuasar } from 'quasar'
-import { API_URL, apiFetch } from '@/services/api'
+import { formatDate, formatDateTime } from '@/composables/useDateFormat'
+import { apiDownload, apiFetch } from '@/services/api'
+import { clearServerValidationErrors, serverErrorProps } from '@/services/server-validation'
 import { useAuthStore } from '@/stores/auth-store'
 
 const $q = useQuasar()
@@ -84,10 +87,19 @@ const canPrint = computed(() => canExport.value || canPdf.value)
 const tableColumns = computed(() => (preview.value.headings || []).map((heading, index) => ({
   name: `col_${index}`,
   label: heading,
-  field: row => row.values[index] ?? '',
+  field: row => formatReportValue(row.values[index]),
   align: 'left'
 })))
 const tableRows = computed(() => (preview.value.rows || []).map((values, index) => ({ __index: index, values })))
+
+function formatReportValue (value) {
+  const text = String(value ?? '')
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(text)) return formatDate(text)
+  if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(text)) return formatDateTime(text)
+
+  return value ?? ''
+}
 
 onMounted(async () => {
   await loadOptions()
@@ -104,6 +116,7 @@ async function loadOptions() {
 
 async function loadPreview() {
   loading.value = true
+  clearServerValidationErrors()
 
   try {
     preview.value = await apiFetch(`/reports/preview?${params().toString()}`)
@@ -116,23 +129,10 @@ async function loadPreview() {
 
 async function download(format) {
   try {
-    const token = localStorage.getItem('siges_token')
+    clearServerValidationErrors()
     const query = params()
     query.set('format', format)
-
-    const response = await fetch(`${API_URL}/reports/export?${query.toString()}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-
-    if (!response.ok) throw new Error('Nao foi possivel gerar o arquivo.')
-
-    const blob = await response.blob()
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${filters.report}.${format}`
-    link.click()
-    URL.revokeObjectURL(url)
+    await apiDownload(`/reports/export?${query.toString()}`, `${filters.report}.${format}`)
   } catch (error) {
     $q.notify({ type: 'negative', message: error.message })
   }

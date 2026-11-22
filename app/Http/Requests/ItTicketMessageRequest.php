@@ -15,7 +15,7 @@ class ItTicketMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'message' => ['required', 'string'],
+            'message' => ['required', 'string', 'max:10000'],
             'direction' => ['nullable', Rule::in(['internal', 'outbound', 'inbound'])],
             'visibility' => ['nullable', Rule::in(['public', 'internal'])],
         ];

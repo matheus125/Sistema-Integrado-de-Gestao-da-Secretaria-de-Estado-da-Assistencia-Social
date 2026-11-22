@@ -33,6 +33,17 @@ export default defineRouter((/* { store, ssrContext } */) => {
     history: createHistory(import.meta.env.QUASAR_VUE_ROUTER_BASE)
   })
 
+  if (typeof window !== 'undefined') {
+    window.addEventListener('siges:unauthenticated', () => {
+      const auth = useAuthStore()
+      auth.clearSession()
+
+      if (Router.currentRoute.value.path !== '/login') {
+        Router.replace('/login')
+      }
+    })
+  }
+
   Router.beforeEach(async (to) => {
     const auth = useAuthStore()
 

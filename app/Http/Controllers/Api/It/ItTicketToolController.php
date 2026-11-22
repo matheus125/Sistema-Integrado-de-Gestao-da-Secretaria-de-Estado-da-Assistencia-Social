@@ -44,7 +44,7 @@ class ItTicketToolController extends Controller
         $this->authorizeTicketAccess($request, $ticket);
         $task = $ticket->tasks()->create($request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:4000'],
             'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
             'due_at' => ['nullable', 'date'],
             'status' => ['nullable', Rule::in(['pendente', 'em_andamento', 'concluida', 'cancelada'])],
@@ -61,7 +61,7 @@ class ItTicketToolController extends Controller
         $this->authorizeTicketAccess($request, $ticket);
         $data = $request->validate([
             'title' => ['sometimes', 'string', 'max:255'],
-            'description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:4000'],
             'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
             'due_at' => ['nullable', 'date'],
             'status' => ['sometimes', Rule::in(['pendente', 'em_andamento', 'concluida', 'cancelada'])],

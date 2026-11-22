@@ -15,24 +15,24 @@
       <q-item v-if="!calendars.length"><q-item-section>Nenhum calendário cadastrado.</q-item-section></q-item>
     </q-list>
   </q-card>
-  <q-dialog v-model="dialog" persistent>
+  <q-dialog v-model="dialog" persistent @before-show="clearServerValidationErrors">
     <q-card style="width: 760px; max-width: 95vw">
       <q-form @submit="save">
         <q-card-section class="text-h6">{{ form.id ? 'Editar' : 'Novo' }} calendário</q-card-section>
         <q-card-section class="q-gutter-md">
           <q-banner class="bg-grey-2">Horários no fuso do sistema: {{ timezone }}. As alterações valem para novos cálculos; os prazos já gravados são preservados.</q-banner>
-          <q-input v-model="form.name" outlined label="Nome" :rules="[required]" />
-          <q-toggle v-model="form.active" label="Ativo" />
-          <q-toggle v-model="form.count_weekends" label="Atender todos os dias da semana" />
-          <q-option-group v-if="!form.count_weekends" v-model="form.weekdays" :options="days" type="checkbox" inline />
+          <q-input v-model="form.name" v-bind="serverErrorProps('name')" outlined label="Nome" :maxlength="160" :rules="[required, maxLength(160)]" />
+          <q-field borderless v-bind="serverErrorProps('active')"><template #control><q-toggle v-model="form.active" label="Ativo" /></template></q-field>
+          <q-field borderless v-bind="serverErrorProps('count_weekends')"><template #control><q-toggle v-model="form.count_weekends" label="Atender todos os dias da semana" /></template></q-field>
+          <q-field v-if="!form.count_weekends" borderless v-bind="serverErrorProps('weekdays')"><template #control><q-option-group v-model="form.weekdays" :options="days" type="checkbox" inline /></template></q-field>
           <div class="row q-col-gutter-md">
             <div v-for="field in timeFields" :key="field.key" class="col-12 col-sm-6">
-              <q-input v-model="form[field.key]" outlined type="time" :label="field.label" :clearable="field.optional" :rules="field.optional ? [] : [required]" />
+              <q-input v-model="form[field.key]" v-bind="serverErrorProps(field.key)" outlined type="time" :label="field.label" :clearable="field.optional" :rules="field.optional ? [] : [required]" />
             </div>
           </div>
           <div class="text-subtitle1">Feriados</div>
           <div v-for="(_, index) in form.holidays" :key="index" class="row items-start q-gutter-sm">
-            <q-input v-model="form.holidays[index]" outlined type="date" label="Data" :rules="[required]" />
+            <q-input v-model="form.holidays[index]" v-bind="serverErrorProps(`holidays.${index}`)" outlined type="date" label="Data" :rules="[required]" />
             <q-btn flat label="Remover" @click="form.holidays.splice(index, 1)" />
           </div>
           <q-btn outline label="Adicionar feriado" @click="form.holidays.push('')" />
@@ -40,11 +40,11 @@
           <p>Exceções prevalecem sobre feriados e dias da semana. Deixe os horários vazios para usar o expediente habitual. Ao informar um horário especial, informe início e fim; o intervalo será o definido nessa exceção.</p>
           <q-card v-for="(exception, index) in form.exceptions" :key="index" flat bordered>
             <q-card-section class="q-gutter-sm">
-              <q-input v-model="exception.date" outlined type="date" label="Data" :rules="[required]" />
-              <q-toggle v-model="exception.working" label="Haverá atendimento" />
+              <q-input v-model="exception.date" v-bind="serverErrorProps(`exceptions.${index}.date`)" outlined type="date" label="Data" :rules="[required]" />
+              <q-field borderless v-bind="serverErrorProps(`exceptions.${index}.working`)"><template #control><q-toggle v-model="exception.working" label="Haverá atendimento" /></template></q-field>
               <div v-if="exception.working" class="row q-col-gutter-md">
                 <div v-for="field in timeFields" :key="field.key" class="col-12 col-sm-6">
-                  <q-input v-model="exception[field.key]" outlined type="time" clearable :label="field.label" />
+                  <q-input v-model="exception[field.key]" v-bind="serverErrorProps(`exceptions.${index}.${field.key}`)" outlined type="time" clearable :label="field.label" />
                 </div>
               </div>
               <q-btn flat label="Remover exceção" @click="form.exceptions.splice(index, 1)" />
@@ -66,6 +66,8 @@
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '@/services/api'
+import { clearServerValidationErrors, serverErrorProps } from '@/services/server-validation'
+import { maxLength } from '@/utils/form-validation'
 
 defineProps({ calendars: { type: Array, default: () => [] }, timezone: { type: String, default: 'UTC' } })
 const emit = defineEmits(['saved'])

@@ -28,26 +28,26 @@
         <q-table flat :rows="plans" :columns="columns" row-key="id" :loading="loading" no-data-label="Nenhum plano cadastrado">
           <template #body-cell-asset="props"><q-td :props="props">{{ props.row.asset?.asset_number }} — {{ props.row.asset?.description }}</q-td></template>
           <template #body-cell-status="props"><q-td :props="props"><q-badge :color="props.row.status === 'ativo' ? 'positive' : 'grey'" outline>{{ props.row.status }}</q-badge></q-td></template>
-          <template #body-cell-actions="props"><q-td :props="props" class="q-gutter-xs"><q-btn v-if="canEdit" flat round dense icon="check" color="positive" @click="complete(props.row)"><q-tooltip>Registrar manutenção concluída</q-tooltip></q-btn><q-btn v-if="canEdit" flat round dense icon="edit" color="primary" @click="openPlan(props.row)"><q-tooltip>Editar plano</q-tooltip></q-btn></q-td></template>
+          <template #body-cell-actions="props"><q-td :props="props" class="q-gutter-xs"><q-btn v-if="canEdit" flat round dense icon="check" color="positive" aria-label="Registrar manutenção concluída" @click="complete(props.row)"><q-tooltip>Registrar manutenção concluída</q-tooltip></q-btn><q-btn v-if="canEdit" flat round dense icon="edit" color="primary" aria-label="Editar plano" @click="openPlan(props.row)"><q-tooltip>Editar plano</q-tooltip></q-btn></q-td></template>
         </q-table>
       </q-card>
     </section>
 
-    <q-dialog v-model="dialog">
+    <q-dialog v-model="dialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card request-dialog">
         <q-card-section class="text-h6">{{ form.id ? 'Editar plano' : 'Novo plano de manutenção' }}</q-card-section>
         <q-separator />
         <q-form @submit="save">
           <q-card-section class="form-grid">
-            <q-select v-model="form.asset_id" outlined label="Patrimônio" :options="assetOptions" emit-value map-options use-input input-debounce="300" :rules="[required]" />
-            <q-input v-model="form.name" outlined label="Nome do plano" :rules="[required]" />
-            <q-input v-model.number="form.frequency_days" outlined type="number" label="Periodicidade (dias)" :rules="[required]" />
-            <q-input v-model="form.next_maintenance_at" outlined type="date" label="Próxima manutenção" :rules="[required]" />
-            <q-input v-model="form.last_maintenance_at" outlined type="date" label="Última manutenção" />
-            <q-input v-model.number="form.lead_days" outlined type="number" label="Alerta antecipado (dias)" />
-            <q-select v-model="form.status" outlined label="Status" :options="statusOptions" emit-value map-options />
-            <q-toggle v-model="form.auto_create_ticket" label="Gerar chamado automaticamente" />
-            <q-input v-model="form.description" outlined type="textarea" label="Procedimento / descrição" class="span-2" />
+            <q-select v-model="form.asset_id" v-bind="serverErrorProps('asset_id')" outlined label="Patrimônio" :options="assetOptions" emit-value map-options use-input input-debounce="300" :rules="[required]" />
+            <q-input v-model="form.name" v-bind="serverErrorProps('name')" outlined label="Nome do plano" :maxlength="160" :rules="[required, maxLength(160)]" />
+            <q-input v-model.number="form.frequency_days" v-bind="serverErrorProps('frequency_days')" outlined type="number" label="Periodicidade (dias)" :rules="[required]" />
+            <q-input v-model="form.next_maintenance_at" v-bind="serverErrorProps('next_maintenance_at')" outlined type="date" label="Próxima manutenção" :rules="[required]" />
+            <q-input v-model="form.last_maintenance_at" v-bind="serverErrorProps('last_maintenance_at')" outlined type="date" label="Última manutenção" />
+            <q-input v-model.number="form.lead_days" v-bind="serverErrorProps('lead_days')" outlined type="number" label="Alerta antecipado (dias)" />
+            <q-select v-model="form.status" v-bind="serverErrorProps('status')" outlined label="Status" :options="statusOptions" emit-value map-options />
+            <q-field borderless v-bind="serverErrorProps('auto_create_ticket')"><template #control><q-toggle v-model="form.auto_create_ticket" label="Gerar chamado automaticamente" /></template></q-field>
+            <q-input v-model="form.description" v-bind="serverErrorProps('description')" outlined type="textarea" label="Procedimento / descrição" :maxlength="2000" counter :rules="[maxLength(2000)]" class="span-2" />
           </q-card-section>
           <q-card-actions align="right"><q-btn flat label="Cancelar" v-close-popup /><q-btn type="submit" color="primary" label="Salvar" unelevated /></q-card-actions>
         </q-form>
@@ -59,8 +59,11 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useQuasar } from 'quasar'
+import { formatDate } from '@/composables/useDateFormat'
 import { apiFetch } from '@/services/api'
+import { clearServerValidationErrors, serverErrorProps } from '@/services/server-validation'
 import { useAuthStore } from '@/stores/auth-store'
+import { maxLength } from '@/utils/form-validation'
 
 const $q = useQuasar()
 const auth = useAuthStore()
@@ -79,7 +82,7 @@ const columns = [
   { name: 'asset', label: 'Patrimônio', field: 'asset', align: 'left' },
   { name: 'name', label: 'Plano', field: 'name', align: 'left' },
   { name: 'frequency_days', label: 'Periodicidade', field: row => `${row.frequency_days} dias`, align: 'left' },
-  { name: 'next_maintenance_at', label: 'Próxima', field: 'next_maintenance_at', align: 'left' },
+  { name: 'next_maintenance_at', label: 'Próxima', field: row => formatDate(row.next_maintenance_at), align: 'left' },
   { name: 'status', label: 'Status', field: 'status', align: 'left' },
   { name: 'actions', label: '', field: 'actions', align: 'right' }
 ]

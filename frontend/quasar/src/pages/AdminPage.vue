@@ -40,10 +40,10 @@
             </template>
             <template #body-cell-actions="props">
               <q-td :props="props">
-                <q-btn v-if="canEdit" flat round dense icon="edit" @click="openUser(props.row)">
+                <q-btn v-if="canEdit" flat round dense icon="edit" aria-label="Editar usuário" @click="openUser(props.row)">
                   <q-tooltip>Editar usuario</q-tooltip>
                 </q-btn>
-                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" @click="removeUser(props.row)">
+                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" aria-label="Excluir usuário" @click="removeUser(props.row)">
                   <q-tooltip>Excluir usuario</q-tooltip>
                 </q-btn>
               </q-td>
@@ -60,8 +60,8 @@
             </template>
             <template #body-cell-actions="props">
               <q-td :props="props">
-                <q-btn v-if="canEdit" flat round dense icon="edit" @click="openDepartment(props.row)" />
-                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" @click="removeDepartment(props.row)" />
+                <q-btn v-if="canEdit" flat round dense icon="edit" aria-label="Editar setor" @click="openDepartment(props.row)" />
+                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" aria-label="Excluir setor" @click="removeDepartment(props.row)" />
               </q-td>
             </template>
           </q-table>
@@ -74,8 +74,8 @@
             </template>
             <template #body-cell-actions="props">
               <q-td :props="props">
-                <q-btn v-if="canEdit" flat round dense icon="edit" @click="openRole(props.row)" />
-                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" @click="removeRole(props.row)" />
+                <q-btn v-if="canEdit" flat round dense icon="edit" aria-label="Editar perfil" @click="openRole(props.row)" />
+                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" aria-label="Excluir perfil" @click="removeRole(props.row)" />
               </q-td>
             </template>
           </q-table>
@@ -83,23 +83,23 @@
       </q-tab-panels>
     </section>
 
-    <q-dialog v-model="userDialog">
+    <q-dialog v-model="userDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card request-dialog">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">{{ userForm.id ? 'Editar usuario' : 'Novo usuario' }}</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar usuário" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveUser">
           <q-card-section class="form-grid">
-            <q-input v-model="userForm.name" outlined label="Nome" :rules="[required]" />
-            <q-input v-model="userForm.email" outlined type="email" label="Email" :rules="[required]" />
-            <q-input v-model="userForm.password" outlined type="password" :label="userForm.id ? 'Nova senha' : 'Senha'" :rules="userForm.id ? [] : [required]" />
-            <q-input v-model="userForm.phone" outlined label="Telefone" />
-            <q-input v-model="userForm.position" outlined label="Cargo" />
-            <q-select v-model="userForm.status" outlined label="Status" :options="userStatuses" emit-value map-options />
-            <q-select v-model="userForm.department_id" outlined label="Setor" :options="departmentOptions" emit-value map-options clearable />
-            <q-select v-model="userForm.roles" outlined label="Perfis" :options="roleOptions" multiple use-chips emit-value map-options />
+            <q-input v-model="userForm.name" v-bind="serverErrorProps('name')" outlined label="Nome" :maxlength="160" :rules="[required, maxLength(160)]" />
+            <q-input v-model="userForm.email" v-bind="serverErrorProps('email')" outlined type="email" label="Email" :maxlength="180" :rules="[required, maxLength(180)]" />
+            <q-input v-model="userForm.password" v-bind="serverErrorProps('password')" outlined type="password" :label="userForm.id ? 'Nova senha' : 'Senha'" :maxlength="255" :rules="userForm.id ? [maxLength(255)] : [required, maxLength(255)]" />
+            <BrazilianPhoneInput v-model="userForm.phone" v-bind="serverErrorProps('phone')" outlined label="Telefone" />
+            <q-input v-model="userForm.position" v-bind="serverErrorProps('position')" outlined label="Cargo" :maxlength="120" :rules="[maxLength(120)]" />
+            <q-select v-model="userForm.status" v-bind="serverErrorProps('status')" outlined label="Status" :options="userStatuses" emit-value map-options />
+            <q-select v-model="userForm.department_id" v-bind="serverErrorProps('department_id')" outlined label="Setor" :options="departmentOptions" emit-value map-options clearable />
+            <q-select v-model="userForm.roles" v-bind="serverErrorProps('roles')" outlined label="Perfis" :options="roleOptions" multiple use-chips emit-value map-options />
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat label="Cancelar" v-close-popup />
@@ -109,19 +109,19 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="departmentDialog">
+    <q-dialog v-model="departmentDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">{{ departmentForm.id ? 'Editar setor' : 'Novo setor' }}</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar setor" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveDepartment">
           <q-card-section class="form-grid">
-            <q-input v-model="departmentForm.name" outlined label="Nome" :rules="[required]" />
-            <q-input v-model="departmentForm.slug" outlined label="Slug" />
-            <q-select v-model="departmentForm.parent_id" outlined label="Setor pai" :options="departmentOptions" emit-value map-options clearable />
-            <q-toggle v-model="departmentForm.active" label="Ativo" />
+            <q-input v-model="departmentForm.name" v-bind="serverErrorProps('name')" outlined label="Nome" :maxlength="160" :rules="[required, maxLength(160)]" />
+            <q-input v-model="departmentForm.slug" v-bind="serverErrorProps('slug')" outlined label="Slug" :maxlength="180" :rules="[maxLength(180)]" />
+            <q-select v-model="departmentForm.parent_id" v-bind="serverErrorProps('parent_id')" outlined label="Setor pai" :options="departmentOptions" emit-value map-options clearable />
+            <q-field borderless v-bind="serverErrorProps('active')"><template #control><q-toggle v-model="departmentForm.active" label="Ativo" /></template></q-field>
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat label="Cancelar" v-close-popup />
@@ -131,20 +131,20 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="roleDialog">
+    <q-dialog v-model="roleDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card permissions-dialog">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">{{ roleForm.id ? 'Editar perfil' : 'Novo perfil' }}</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar perfil" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveRole">
           <q-card-section>
-            <q-input v-model="roleForm.name" outlined label="Nome do perfil" :rules="[required]" />
+            <q-input v-model="roleForm.name" v-bind="serverErrorProps('name')" outlined label="Nome do perfil" :maxlength="120" :rules="[required, maxLength(120)]" />
             <div class="permission-grid q-mt-md">
               <div v-for="group in permissionGroups" :key="group.name" class="permission-box">
                 <div class="text-weight-bold q-mb-sm">{{ group.name }}</div>
-                <q-option-group v-model="roleForm.permissions" :options="group.options" type="checkbox" dense />
+                <q-field borderless v-bind="serverErrorProps('permissions')"><template #control><q-option-group v-model="roleForm.permissions" :options="group.options" type="checkbox" dense /></template></q-field>
               </div>
             </div>
           </q-card-section>
@@ -162,7 +162,10 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiFetch } from '@/services/api'
+import { clearServerValidationErrors, serverErrorProps } from '@/services/server-validation'
 import { useAuthStore } from '@/stores/auth-store'
+import { maxLength } from '@/utils/form-validation'
+import BrazilianPhoneInput from '@/components/BrazilianPhoneInput.vue'
 
 const $q = useQuasar()
 const auth = useAuthStore()

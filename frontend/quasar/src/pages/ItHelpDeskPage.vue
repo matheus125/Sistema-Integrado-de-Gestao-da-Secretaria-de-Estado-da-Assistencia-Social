@@ -37,7 +37,7 @@
               <div class="text-h6">Dashboard operacional</div>
               <div class="text-caption text-grey-7">Indicadores, desempenho do técnico e reincidências dos últimos 90 dias.</div>
             </div>
-            <q-btn flat round icon="refresh" :loading="dashboardLoading" @click="loadDashboard" />
+            <q-btn flat round icon="refresh" aria-label="Atualizar dashboard do Help Desk" :loading="dashboardLoading" @click="loadDashboard" />
           </div>
           <div class="metric-grid">
             <q-card v-for="item in dashboardCards" :key="item.key" flat bordered class="metric-card">
@@ -152,7 +152,7 @@
             <q-select v-model="filters.sla" dense outlined clearable label="SLA" :options="slaOptions" emit-value map-options @update:model-value="loadAll" />
             <q-input v-model="filters.date_from" dense outlined type="date" label="De" @update:model-value="loadAll" />
             <q-input v-model="filters.date_to" dense outlined type="date" label="Ate" @update:model-value="loadAll" />
-            <q-btn flat round icon="filter_alt" @click="clearFilters">
+            <q-btn flat round icon="filter_alt" aria-label="Limpar filtros de chamados" @click="clearFilters">
               <q-tooltip>Limpar filtros</q-tooltip>
             </q-btn>
           </div>
@@ -189,10 +189,10 @@
 
         <template #body-cell-actions="props">
           <q-td :props="props">
-            <q-btn flat round dense icon="forum" @click="inspectTicket(props.row)">
+            <q-btn flat round dense icon="forum" aria-label="Abrir histórico e atendimento" @click="inspectTicket(props.row)">
               <q-tooltip>Historico e atendimento</q-tooltip>
             </q-btn>
-            <q-btn v-if="canEdit" flat round dense icon="edit" @click="openTicket(props.row)">
+            <q-btn v-if="canEdit" flat round dense icon="edit" aria-label="Editar chamado" @click="openTicket(props.row)">
               <q-tooltip>Editar chamado</q-tooltip>
             </q-btn>
           </q-td>
@@ -219,7 +219,7 @@
             <q-select v-model="filters.assigned_to" dense outlined clearable label="Tecnico" :options="technicianOptions" emit-value map-options @update:model-value="loadAll" />
             <q-select v-model="filters.sla" dense outlined clearable label="SLA" :options="slaOptions" emit-value map-options @update:model-value="loadAll" />
             <q-select v-model="filters.source" dense outlined clearable label="Origem" :options="sourceOptions" emit-value map-options @update:model-value="loadAll" />
-            <q-btn flat round icon="filter_alt" @click="clearFilters">
+            <q-btn flat round icon="filter_alt" aria-label="Limpar filtros do Kanban" @click="clearFilters">
               <q-tooltip>Limpar filtros</q-tooltip>
             </q-btn>
           </div>
@@ -307,10 +307,10 @@
             </template>
             <template #body-cell-actions="props">
               <q-td :props="props">
-                <q-btn v-if="canEditCategory" flat round dense icon="edit" @click="openCategory(props.row)">
+                <q-btn v-if="canEditCategory" flat round dense icon="edit" aria-label="Editar categoria" @click="openCategory(props.row)">
                   <q-tooltip>Editar categoria</q-tooltip>
                 </q-btn>
-                <q-btn v-if="canDeleteCategory" flat round dense icon="delete" color="negative" @click="removeCategory(props.row)">
+                <q-btn v-if="canDeleteCategory" flat round dense icon="delete" color="negative" aria-label="Excluir categoria" @click="removeCategory(props.row)">
                   <q-tooltip>Excluir categoria</q-tooltip>
                 </q-btn>
               </q-td>
@@ -320,7 +320,7 @@
 
         <q-tab-panel v-if="canEdit" name="knowledge">
           <q-table flat bordered title="Base de conhecimento" :rows="knowledgeArticles" :columns="knowledgeColumns" row-key="id" :loading="loading">
-            <template #top-right><q-btn flat round icon="refresh" :loading="loading" @click="loadKnowledge" /></template>
+            <template #top-right><q-btn flat round icon="refresh" aria-label="Atualizar base de conhecimento" :loading="loading" @click="loadKnowledge" /></template>
             <template #body-cell-public="props">
               <q-td :props="props"><q-toggle :model-value="props.row.public" @update:model-value="value => publishArticle(props.row, value)" /></q-td>
             </template>
@@ -329,7 +329,7 @@
 
         <q-tab-panel v-if="canEdit" name="teams">
           <q-table flat bordered title="Filas e equipes" :rows="supportTeams" :columns="teamColumns" row-key="id" :loading="loading">
-            <template #top-right><q-btn flat round icon="refresh" :loading="loading" @click="loadTeams" /></template>
+            <template #top-right><q-btn flat round icon="refresh" aria-label="Atualizar equipes" :loading="loading" @click="loadTeams" /></template>
             <template #body-cell-technicians="props"><q-td :props="props">{{ (props.row.technicians || []).map(item => item.name).join(', ') || 'Sem tecnicos' }}</q-td></template>
             <template #body-cell-categories="props"><q-td :props="props">{{ (props.row.categories || []).map(item => item.name).join(', ') || 'Todas' }}</q-td></template>
           </q-table>
@@ -340,7 +340,7 @@
             <template #top-right><q-btn color="primary" icon="add" label="Novo template" unelevated @click="openResponseTemplate()" /></template>
             <template #body-cell-scope="props"><q-td :props="props">{{ responseTemplateScope(props.row) }}</q-td></template>
             <template #body-cell-active="props"><q-td :props="props"><q-badge :color="props.row.active ? 'positive' : 'grey'" outline>{{ props.row.active ? 'ativo' : 'inativo' }}</q-badge></q-td></template>
-            <template #body-cell-actions="props"><q-td :props="props"><q-btn flat round dense icon="edit" @click="openResponseTemplate(props.row)" /></q-td></template>
+            <template #body-cell-actions="props"><q-td :props="props"><q-btn flat round dense icon="edit" aria-label="Editar template de resposta" @click="openResponseTemplate(props.row)" /></q-td></template>
           </q-table>
         </q-tab-panel>
 
@@ -350,7 +350,7 @@
             <template #body-cell-conditions="props"><q-td :props="props">{{ formatAutomationJson(props.row.conditions) }}</q-td></template>
             <template #body-cell-actions="props"><q-td :props="props">{{ formatAutomationJson(props.row.actions) }}</q-td></template>
             <template #body-cell-active="props"><q-td :props="props"><q-toggle :model-value="props.row.active" @update:model-value="value => toggleAutomationRule(props.row, value)" /></q-td></template>
-            <template #body-cell-edit="props"><q-td :props="props"><q-btn flat round dense icon="edit" @click="openAutomationRule(props.row)" /></q-td></template>
+            <template #body-cell-edit="props"><q-td :props="props"><q-btn flat round dense icon="edit" aria-label="Editar regra de automação" @click="openAutomationRule(props.row)" /></q-td></template>
           </q-table>
         </q-tab-panel>
 
@@ -359,7 +359,7 @@
             <template #top-right><q-btn color="primary" icon="add" label="Novo serviço" unelevated @click="openServiceCatalog()" /></template>
             <template #body-cell-category="props"><q-td :props="props">{{ props.row.category?.name || 'Sem categoria' }}</q-td></template>
             <template #body-cell-active="props"><q-td :props="props"><q-badge :color="props.row.active ? 'positive' : 'grey'" outline>{{ props.row.active ? 'ativo' : 'inativo' }}</q-badge></q-td></template>
-            <template #body-cell-actions="props"><q-td :props="props"><q-btn flat round dense icon="edit" @click="openServiceCatalog(props.row)" /></q-td></template>
+            <template #body-cell-actions="props"><q-td :props="props"><q-btn flat round dense icon="edit" aria-label="Editar serviço" @click="openServiceCatalog(props.row)" /></q-td></template>
           </q-table>
         </q-tab-panel>
 
@@ -375,7 +375,7 @@
           <q-table flat bordered title="Templates de checklist" :rows="checklistTemplates" :columns="checklistColumns" row-key="id" :loading="loading">
             <template #top-right><q-btn color="primary" icon="add" label="Novo template" unelevated @click="openChecklistTemplate()" /></template>
             <template #body-cell-items="props"><q-td :props="props">{{ (props.row.items || []).map(item => item.label).join(', ') }}</q-td></template>
-            <template #body-cell-actions="props"><q-td :props="props"><q-btn flat round dense icon="edit" @click="openChecklistTemplate(props.row)" /></q-td></template>
+            <template #body-cell-actions="props"><q-td :props="props"><q-btn flat round dense icon="edit" aria-label="Editar checklist" @click="openChecklistTemplate(props.row)" /></q-td></template>
           </q-table>
         </q-tab-panel>
 
@@ -393,7 +393,7 @@
           >
             <template #top-right>
               <div class="row q-gutter-sm">
-                <q-btn flat round icon="refresh" :loading="loading" @click="loadSlaRules">
+                <q-btn flat round icon="refresh" aria-label="Atualizar regras de SLA" :loading="loading" @click="loadSlaRules">
                   <q-tooltip>Atualizar SLAs</q-tooltip>
                 </q-btn>
                 <q-btn color="primary" icon="add" label="Nova regra" unelevated @click="openSlaRule()" />
@@ -425,7 +425,7 @@
 
             <template #body-cell-actions="props">
               <q-td :props="props">
-                <q-btn flat round dense icon="edit" @click="openSlaRule(props.row)">
+                <q-btn flat round dense icon="edit" aria-label="Editar regra de SLA" @click="openSlaRule(props.row)">
                   <q-tooltip>Editar regra</q-tooltip>
                 </q-btn>
               </q-td>
@@ -435,23 +435,24 @@
       </q-tab-panels>
     </section>
 
-    <q-dialog v-model="ticketDialog">
+    <q-dialog v-model="ticketDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card request-dialog">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">{{ ticketForm.id ? 'Editar chamado' : 'Abrir chamado' }}</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar chamado" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveTicket">
           <q-card-section class="form-grid">
-            <q-input v-model="ticketForm.requester_name" outlined label="Nome" :rules="[required]" />
-            <q-input v-model="ticketForm.requester_phone" outlined label="Telefone" />
-            <q-select v-if="!requesterOnly" v-model="ticketForm.department_id" outlined label="Setor" :options="departmentOptions" emit-value map-options clearable />
+            <q-input v-model="ticketForm.requester_name" v-bind="serverErrorProps('requester_name')" outlined label="Nome" :maxlength="160" :rules="[required, maxLength(160)]" />
+            <BrazilianPhoneInput v-model="ticketForm.requester_phone" v-bind="serverErrorProps('requester_phone')" outlined label="Telefone" />
+            <q-select v-if="!requesterOnly" v-model="ticketForm.department_id" v-bind="serverErrorProps('department_id')" outlined label="Setor" :options="departmentOptions" emit-value map-options clearable />
             <q-input v-else :model-value="departmentOptions[0]?.label || 'Seu setor'" outlined label="Setor" readonly />
-            <q-input v-if="!requesterOnly" v-model="ticketForm.department_name" outlined label="Departamento" />
-            <q-select v-model="ticketForm.type" outlined label="Tipo" :options="typeOptions" emit-value map-options />
+            <q-input v-if="!requesterOnly" v-model="ticketForm.department_name" v-bind="serverErrorProps('department_name')" outlined label="Departamento" :maxlength="160" :rules="[maxLength(160)]" />
+            <q-select v-model="ticketForm.type" v-bind="serverErrorProps('type')" outlined label="Tipo" :options="typeOptions" emit-value map-options />
             <q-select
               v-model="ticketForm.category_id"
+              v-bind="serverErrorProps('category_id')"
               outlined
               label="Categoria"
               :options="filteredCategoryOptions"
@@ -462,14 +463,14 @@
               input-debounce="200"
               @filter="filterCategoryOptions"
             />
-            <q-select v-model="ticketForm.priority" outlined label="Prioridade" :options="priorityOptions" emit-value map-options />
-            <q-select v-model="ticketForm.impact" outlined label="Impacto" :options="impactOptions" emit-value map-options clearable @update:model-value="updateCalculatedPriority" />
-            <q-select v-model="ticketForm.urgency" outlined label="Urgencia" :options="urgencyOptions" emit-value map-options clearable @update:model-value="updateCalculatedPriority" />
-            <q-select v-if="!requesterOnly" v-model="ticketForm.support_team_id" outlined label="Fila/equipe" :options="supportTeamOptions" emit-value map-options clearable />
-            <q-select v-model="ticketForm.primary_asset_id" outlined label="Patrimonio principal" :options="assetOptions" emit-value map-options clearable />
-            <q-select v-model="ticketForm.asset_ids" outlined label="Patrimonios relacionados" :options="assetOptions" emit-value map-options multiple clearable />
-            <q-select v-if="!requesterOnly" v-model="ticketForm.assigned_to" outlined label="Tecnico" :options="technicianOptions" emit-value map-options clearable class="span-2" />
-            <q-input v-model="ticketForm.description" outlined type="textarea" label="Descricao do problema" :rules="[required]" class="span-2" @update:model-value="loadKnowledgeSuggestions" />
+            <q-select v-model="ticketForm.priority" v-bind="serverErrorProps('priority')" outlined label="Prioridade" :options="priorityOptions" emit-value map-options />
+            <q-select v-model="ticketForm.impact" v-bind="serverErrorProps('impact')" outlined label="Impacto" :options="impactOptions" emit-value map-options clearable @update:model-value="updateCalculatedPriority" />
+            <q-select v-model="ticketForm.urgency" v-bind="serverErrorProps('urgency')" outlined label="Urgencia" :options="urgencyOptions" emit-value map-options clearable @update:model-value="updateCalculatedPriority" />
+            <q-select v-if="!requesterOnly" v-model="ticketForm.support_team_id" v-bind="serverErrorProps('support_team_id')" outlined label="Fila/equipe" :options="supportTeamOptions" emit-value map-options clearable />
+            <q-select v-model="ticketForm.primary_asset_id" v-bind="serverErrorProps('primary_asset_id')" outlined label="Patrimonio principal" :options="assetOptions" emit-value map-options clearable />
+            <q-select v-model="ticketForm.asset_ids" v-bind="serverErrorProps('asset_ids')" outlined label="Patrimonios relacionados" :options="assetOptions" emit-value map-options multiple clearable />
+            <q-select v-if="!requesterOnly" v-model="ticketForm.assigned_to" v-bind="serverErrorProps('assigned_to')" outlined label="Tecnico" :options="technicianOptions" emit-value map-options clearable class="span-2" />
+            <q-input v-model="ticketForm.description" v-bind="serverErrorProps('description')" outlined type="textarea" label="Descricao do problema" :maxlength="10000" counter :rules="[required, maxLength(10000)]" class="span-2" @update:model-value="loadKnowledgeSuggestions" />
             <div v-if="knowledgeSuggestions.length" class="span-2">
               <div class="text-subtitle2 q-mb-sm">Artigos sugeridos</div>
               <q-list bordered separator>
@@ -490,22 +491,22 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="categoryDialog">
+    <q-dialog v-model="categoryDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card request-dialog">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">{{ categoryForm.id ? 'Editar categoria' : 'Nova categoria' }}</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar categoria" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveCategory">
           <q-card-section class="form-grid">
-            <q-input v-model="categoryForm.name" outlined label="Nome" :rules="[required]" />
-            <q-select v-model="categoryForm.parent_id" outlined label="Categoria pai" :options="parentCategoryOptions" emit-value map-options clearable />
-            <q-input v-model="categoryForm.description" outlined label="Descricao" class="span-2" />
-            <q-input v-model="categoryForm.icon" outlined label="Icone" />
-            <q-input v-model="categoryForm.color" outlined label="Cor" />
-            <q-input v-model.number="categoryForm.sort_order" outlined type="number" label="Ordem" />
-            <q-toggle v-model="categoryForm.active" label="Ativo" />
+            <q-input v-model="categoryForm.name" v-bind="serverErrorProps('name')" outlined label="Nome" :maxlength="160" :rules="[required, maxLength(160)]" />
+            <q-select v-model="categoryForm.parent_id" v-bind="serverErrorProps('parent_id')" outlined label="Categoria pai" :options="parentCategoryOptions" emit-value map-options clearable />
+            <q-input v-model="categoryForm.description" v-bind="serverErrorProps('description')" outlined type="textarea" label="Descricao" :maxlength="2000" counter :rules="[maxLength(2000)]" class="span-2" />
+            <q-input v-model="categoryForm.icon" v-bind="serverErrorProps('icon')" outlined label="Icone" :maxlength="80" :rules="[maxLength(80)]" />
+            <q-input v-model="categoryForm.color" v-bind="serverErrorProps('color')" outlined label="Cor" :maxlength="40" :rules="[maxLength(40)]" />
+            <q-input v-model.number="categoryForm.sort_order" v-bind="serverErrorProps('sort_order')" outlined type="number" label="Ordem" />
+            <q-field borderless v-bind="serverErrorProps('active')"><template #control><q-toggle v-model="categoryForm.active" label="Ativo" /></template></q-field>
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat label="Cancelar" v-close-popup />
@@ -515,30 +516,30 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="slaDialog">
+    <q-dialog v-model="slaDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card request-dialog">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">{{ slaForm.id ? 'Editar regra de SLA' : 'Nova regra de SLA' }}</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar regra de SLA" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveSlaRule">
           <q-card-section class="form-grid">
-            <q-input v-model="slaForm.name" outlined label="Nome" :rules="[required]" />
-            <q-select v-model="slaForm.calendar_id" outlined label="Calendario" :options="slaCalendarOptions" emit-value map-options clearable />
+            <q-input v-model="slaForm.name" v-bind="serverErrorProps('name')" outlined label="Nome" :maxlength="160" :rules="[required, maxLength(160)]" />
+            <q-select v-model="slaForm.calendar_id" v-bind="serverErrorProps('calendar_id')" outlined label="Calendario" :options="slaCalendarOptions" emit-value map-options clearable />
             <q-banner v-if="slaForm.is_fallback" dense class="bg-amber-1 text-dark">
               Regra fallback é usada somente quando nenhuma regra geral ou específica corresponder. Ela não possui escopo.
             </q-banner>
-            <q-select v-model="slaForm.priority" outlined label="Prioridade" :options="priorityOptions" emit-value map-options clearable :disable="slaForm.is_fallback" />
-            <q-select v-model="slaForm.type" outlined label="Tipo" :options="typeOptions" emit-value map-options clearable :disable="slaForm.is_fallback" />
-            <q-select v-model="slaForm.category_id" outlined label="Categoria" :options="categoryOptions" emit-value map-options clearable :disable="slaForm.is_fallback" />
-            <q-select v-model="slaForm.department_id" outlined label="Setor" :options="departmentOptions" emit-value map-options clearable :disable="slaForm.is_fallback" />
-            <q-input v-model.number="slaForm.first_response_minutes" outlined type="number" min="0" label="Primeira resposta (min)" :rules="[required]" />
-            <q-input v-model.number="slaForm.start_minutes" outlined type="number" min="0" label="Inicio atendimento (min)" />
-            <q-input v-model.number="slaForm.resolution_minutes" outlined type="number" min="1" label="Resolucao (min)" :rules="[required]" />
-            <q-input v-model.number="slaForm.rule_priority" outlined type="number" label="Prioridade da regra" />
-            <q-toggle v-model="slaForm.is_fallback" label="Regra fallback" @update:model-value="onFallbackToggle" />
-            <q-toggle v-model="slaForm.active" label="Ativa" />
+            <q-select v-model="slaForm.priority" v-bind="serverErrorProps('priority')" outlined label="Prioridade" :options="priorityOptions" emit-value map-options clearable :disable="slaForm.is_fallback" />
+            <q-select v-model="slaForm.type" v-bind="serverErrorProps('type')" outlined label="Tipo" :options="typeOptions" emit-value map-options clearable :disable="slaForm.is_fallback" />
+            <q-select v-model="slaForm.category_id" v-bind="serverErrorProps('category_id')" outlined label="Categoria" :options="categoryOptions" emit-value map-options clearable :disable="slaForm.is_fallback" />
+            <q-select v-model="slaForm.department_id" v-bind="serverErrorProps('department_id')" outlined label="Setor" :options="departmentOptions" emit-value map-options clearable :disable="slaForm.is_fallback" />
+            <q-input v-model.number="slaForm.first_response_minutes" v-bind="serverErrorProps('first_response_minutes')" outlined type="number" min="0" label="Primeira resposta (min)" :rules="[required]" />
+            <q-input v-model.number="slaForm.start_minutes" v-bind="serverErrorProps('start_minutes')" outlined type="number" min="0" label="Inicio atendimento (min)" />
+            <q-input v-model.number="slaForm.resolution_minutes" v-bind="serverErrorProps('resolution_minutes')" outlined type="number" min="1" label="Resolucao (min)" :rules="[required]" />
+            <q-input v-model.number="slaForm.rule_priority" v-bind="serverErrorProps('rule_priority')" outlined type="number" label="Prioridade da regra" />
+            <q-field borderless v-bind="serverErrorProps('is_fallback')"><template #control><q-toggle v-model="slaForm.is_fallback" label="Regra fallback" @update:model-value="onFallbackToggle" /></template></q-field>
+            <q-field borderless v-bind="serverErrorProps('active')"><template #control><q-toggle v-model="slaForm.active" label="Ativa" /></template></q-field>
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat label="Cancelar" v-close-popup />
@@ -548,80 +549,80 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="checklistDialog">
+    <q-dialog v-model="checklistDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card request-dialog">
-        <q-card-section class="row items-center justify-between"><div class="text-h6">{{ checklistForm.id ? 'Editar checklist' : 'Novo checklist' }}</div><q-btn flat round dense icon="close" v-close-popup /></q-card-section>
+        <q-card-section class="row items-center justify-between"><div class="text-h6">{{ checklistForm.id ? 'Editar checklist' : 'Novo checklist' }}</div><q-btn flat round dense icon="close" aria-label="Fechar checklist" v-close-popup /></q-card-section>
         <q-separator />
         <q-form @submit="saveChecklistTemplate">
           <q-card-section class="form-grid">
-            <q-input v-model="checklistForm.name" outlined label="Nome" :rules="[required]" class="span-2" />
-            <q-select v-model="checklistForm.category_id" outlined label="Categoria" :options="categoryOptions" emit-value map-options clearable />
-            <q-select v-model="checklistForm.type" outlined label="Tipo" :options="typeOptions" emit-value map-options clearable />
-            <div class="span-2"><div class="text-subtitle2 q-mb-sm">Itens</div><div v-for="(item, index) in checklistForm.items" :key="index" class="row q-col-gutter-sm q-mb-sm"><q-input v-model="item.label" outlined dense label="Item" class="col" :rules="[required]" /><q-toggle v-model="item.required" label="Obrigatorio" /><q-btn flat round dense icon="delete" color="negative" @click="checklistForm.items.splice(index, 1)" /></div><q-btn flat icon="add" label="Adicionar item" @click="checklistForm.items.push({ label: '', required: false, sort_order: checklistForm.items.length })" /></div>
+            <q-input v-model="checklistForm.name" v-bind="serverErrorProps('name')" outlined label="Nome" :maxlength="160" :rules="[required, maxLength(160)]" class="span-2" />
+            <q-select v-model="checklistForm.category_id" v-bind="serverErrorProps('category_id')" outlined label="Categoria" :options="categoryOptions" emit-value map-options clearable />
+            <q-select v-model="checklistForm.type" v-bind="serverErrorProps('type')" outlined label="Tipo" :options="typeOptions" emit-value map-options clearable />
+            <div class="span-2"><div class="text-subtitle2 q-mb-sm">Itens</div><div v-for="(item, index) in checklistForm.items" :key="index" class="row q-col-gutter-sm q-mb-sm"><q-input v-model="item.label" v-bind="serverErrorProps(`items.${index}.label`)" outlined dense label="Item" :maxlength="255" class="col" :rules="[required, maxLength(255)]" /><q-field borderless v-bind="serverErrorProps(`items.${index}.required`)"><template #control><q-toggle v-model="item.required" label="Obrigatorio" /></template></q-field><q-btn flat round dense icon="delete" color="negative" :aria-label="`Remover item ${index + 1} do checklist`" @click="checklistForm.items.splice(index, 1)" /></div><q-btn flat icon="add" label="Adicionar item" @click="checklistForm.items.push({ label: '', required: false, sort_order: checklistForm.items.length })" /></div>
           </q-card-section>
           <q-card-actions align="right"><q-btn flat label="Cancelar" v-close-popup /><q-btn type="submit" color="primary" icon="save" label="Salvar" unelevated /></q-card-actions>
         </q-form>
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="responseTemplateDialog">
+    <q-dialog v-model="responseTemplateDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card request-dialog">
-        <q-card-section class="row items-center justify-between"><div class="text-h6">{{ responseTemplateForm.id ? 'Editar template' : 'Novo template' }}</div><q-btn flat round dense icon="close" v-close-popup /></q-card-section>
+        <q-card-section class="row items-center justify-between"><div class="text-h6">{{ responseTemplateForm.id ? 'Editar template' : 'Novo template' }}</div><q-btn flat round dense icon="close" aria-label="Fechar template de resposta" v-close-popup /></q-card-section>
         <q-separator />
         <q-form @submit="saveResponseTemplate">
           <q-card-section class="form-grid">
-            <q-input v-model="responseTemplateForm.name" outlined label="Nome" :rules="[required]" />
-            <q-input v-model="responseTemplateForm.key" outlined label="Chave" hint="Ex.: retorno-padrao" />
-            <q-select v-model="responseTemplateForm.scope" outlined label="Escopo" :options="responseTemplateScopeOptions" emit-value map-options />
-            <q-select v-if="responseTemplateForm.scope === 'equipe'" v-model="responseTemplateForm.support_team_id" outlined label="Equipe" :options="supportTeamOptions" emit-value map-options :rules="[required]" />
-            <q-input v-model="responseTemplateForm.body" outlined type="textarea" label="Texto da resposta" :rules="[required]" class="span-2" />
-            <q-toggle v-model="responseTemplateForm.active" label="Ativo" />
+            <q-input v-model="responseTemplateForm.name" v-bind="serverErrorProps('name')" outlined label="Nome" :maxlength="120" :rules="[required, maxLength(120)]" />
+            <q-input v-model="responseTemplateForm.key" v-bind="serverErrorProps('key')" outlined label="Chave" hint="Ex.: retorno-padrao" :maxlength="120" :rules="[maxLength(120)]" />
+            <q-select v-model="responseTemplateForm.scope" v-bind="serverErrorProps('scope')" outlined label="Escopo" :options="responseTemplateScopeOptions" emit-value map-options />
+            <q-select v-if="responseTemplateForm.scope === 'equipe'" v-model="responseTemplateForm.support_team_id" v-bind="serverErrorProps('support_team_id')" outlined label="Equipe" :options="supportTeamOptions" emit-value map-options :rules="[required]" />
+            <q-input v-model="responseTemplateForm.body" v-bind="serverErrorProps('body')" outlined type="textarea" label="Texto da resposta" :maxlength="4096" counter :rules="[required, maxLength(4096)]" class="span-2" />
+            <q-field borderless v-bind="serverErrorProps('active')"><template #control><q-toggle v-model="responseTemplateForm.active" label="Ativo" /></template></q-field>
           </q-card-section>
           <q-card-actions align="right"><q-btn flat label="Cancelar" v-close-popup /><q-btn type="submit" color="primary" icon="save" label="Salvar" unelevated /></q-card-actions>
         </q-form>
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="automationDialog">
+    <q-dialog v-model="automationDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card request-dialog">
-        <q-card-section class="row items-center justify-between"><div class="text-h6">{{ automationForm.id ? 'Editar automação' : 'Nova automação' }}</div><q-btn flat round dense icon="close" v-close-popup /></q-card-section>
+        <q-card-section class="row items-center justify-between"><div class="text-h6">{{ automationForm.id ? 'Editar automação' : 'Nova automação' }}</div><q-btn flat round dense icon="close" aria-label="Fechar regra de automação" v-close-popup /></q-card-section>
         <q-separator />
         <q-form @submit="saveAutomationRule">
           <q-card-section class="form-grid">
-            <q-input v-model="automationForm.name" outlined label="Nome" :rules="[required]" class="span-2" />
-            <q-select v-model="automationForm.event" outlined label="Evento" :options="automationEventOptions" emit-value map-options />
-            <q-toggle v-model="automationForm.active" label="Ativa" />
-            <q-input v-model="automationForm.conditionsText" outlined type="textarea" label="Condições (JSON)" hint="Exemplo: priority igual urgente" class="span-2" />
-            <q-input v-model="automationForm.actionsText" outlined type="textarea" label="Ações (JSON)" hint="Informe uma lista JSON de ações" :rules="[required]" class="span-2" />
+            <q-input v-model="automationForm.name" v-bind="serverErrorProps('name')" outlined label="Nome" :maxlength="120" :rules="[required, maxLength(120)]" class="span-2" />
+            <q-select v-model="automationForm.event" v-bind="serverErrorProps('event')" outlined label="Evento" :options="automationEventOptions" emit-value map-options />
+            <q-field borderless v-bind="serverErrorProps('active')"><template #control><q-toggle v-model="automationForm.active" label="Ativa" /></template></q-field>
+            <q-input v-model="automationForm.conditionsText" v-bind="serverErrorProps('conditions', 'conditionsText')" outlined type="textarea" label="Condições (JSON)" hint="Exemplo: priority igual urgente" class="span-2" />
+            <q-input v-model="automationForm.actionsText" v-bind="serverErrorProps('actions', 'actionsText')" outlined type="textarea" label="Ações (JSON)" hint="Informe uma lista JSON de ações" :rules="[required]" class="span-2" />
           </q-card-section>
           <q-card-actions align="right"><q-btn flat label="Cancelar" v-close-popup /><q-btn type="submit" color="primary" icon="save" label="Salvar" unelevated /></q-card-actions>
         </q-form>
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="serviceCatalogDialog">
+    <q-dialog v-model="serviceCatalogDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card request-dialog">
-        <q-card-section class="row items-center justify-between"><div class="text-h6">{{ serviceCatalogForm.id ? 'Editar serviço' : 'Novo serviço' }}</div><q-btn flat round dense icon="close" v-close-popup /></q-card-section>
+        <q-card-section class="row items-center justify-between"><div class="text-h6">{{ serviceCatalogForm.id ? 'Editar serviço' : 'Novo serviço' }}</div><q-btn flat round dense icon="close" aria-label="Fechar serviço" v-close-popup /></q-card-section>
         <q-separator />
         <q-form @submit="saveServiceCatalog">
           <q-card-section class="form-grid">
-            <q-input v-model="serviceCatalogForm.name" outlined label="Nome" :rules="[required]" />
-            <q-input v-model="serviceCatalogForm.key" outlined label="Chave" :rules="[required]" />
-            <q-select v-model="serviceCatalogForm.category_id" outlined label="Categoria" :options="categoryOptions" emit-value map-options clearable />
-            <q-select v-model="serviceCatalogForm.type" outlined label="Tipo" :options="typeOptions" emit-value map-options clearable />
-            <q-select v-model="serviceCatalogForm.sla_rule_id" outlined label="Regra SLA" :options="slaRuleOptions" emit-value map-options clearable />
-            <q-select v-model="serviceCatalogForm.checklist_template_id" outlined label="Checklist" :options="checklistTemplateOptions" emit-value map-options clearable />
-            <q-input v-model="serviceCatalogForm.description" outlined type="textarea" label="Descrição" class="span-2" />
-            <q-toggle v-model="serviceCatalogForm.requires_approval" label="Exige aprovação" />
-            <q-input v-if="serviceCatalogForm.requires_approval" v-model="serviceCatalogForm.approval_role" outlined label="Perfil aprovador" />
-            <q-toggle v-model="serviceCatalogForm.active" label="Ativo" />
+            <q-input v-model="serviceCatalogForm.name" v-bind="serverErrorProps('name')" outlined label="Nome" :maxlength="160" :rules="[required, maxLength(160)]" />
+            <q-input v-model="serviceCatalogForm.key" v-bind="serverErrorProps('key')" outlined label="Chave" :maxlength="120" :rules="[required, maxLength(120)]" />
+            <q-select v-model="serviceCatalogForm.category_id" v-bind="serverErrorProps('category_id')" outlined label="Categoria" :options="categoryOptions" emit-value map-options clearable />
+            <q-select v-model="serviceCatalogForm.type" v-bind="serverErrorProps('type')" outlined label="Tipo" :options="typeOptions" emit-value map-options clearable />
+            <q-select v-model="serviceCatalogForm.sla_rule_id" v-bind="serverErrorProps('sla_rule_id')" outlined label="Regra SLA" :options="slaRuleOptions" emit-value map-options clearable />
+            <q-select v-model="serviceCatalogForm.checklist_template_id" v-bind="serverErrorProps('checklist_template_id')" outlined label="Checklist" :options="checklistTemplateOptions" emit-value map-options clearable />
+            <q-input v-model="serviceCatalogForm.description" v-bind="serverErrorProps('description')" outlined type="textarea" label="Descrição" :maxlength="4000" counter :rules="[maxLength(4000)]" class="span-2" />
+            <q-field borderless v-bind="serverErrorProps('requires_approval')"><template #control><q-toggle v-model="serviceCatalogForm.requires_approval" label="Exige aprovação" /></template></q-field>
+            <q-input v-if="serviceCatalogForm.requires_approval" v-model="serviceCatalogForm.approval_role" v-bind="serverErrorProps('approval_role')" outlined label="Perfil aprovador" :maxlength="120" :rules="[maxLength(120)]" />
+            <q-field borderless v-bind="serverErrorProps('active')"><template #control><q-toggle v-model="serviceCatalogForm.active" label="Ativo" /></template></q-field>
           </q-card-section>
           <q-card-actions align="right"><q-btn flat label="Cancelar" v-close-popup /><q-btn type="submit" color="primary" icon="save" label="Salvar" unelevated /></q-card-actions>
         </q-form>
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="detailDialog">
+    <q-dialog v-model="detailDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card ticket-detail-dialog">
         <q-inner-loading :showing="detailLoading" color="primary"><q-spinner-gears size="42px" /></q-inner-loading>
         <q-card-section class="row items-center justify-between">
@@ -629,38 +630,42 @@
             <div class="text-h6">Chamado #{{ selectedTicket?.id }}</div>
             <div class="text-caption text-grey-7">{{ selectedTicket?.requester_name }} - {{ selectedTicket?.category_model?.name || selectedTicket?.category || 'sem categoria' }}</div>
           </div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar detalhes do chamado" v-close-popup />
         </q-card-section>
         <q-separator />
 
         <q-card-section v-if="selectedTicket" class="ticket-detail-grid">
-          <q-select v-model="statusForm.status" outlined dense label="Status" :options="selectedStatusOptions" emit-value map-options />
-          <q-input v-model.number="statusForm.service_time_minutes" outlined dense type="number" label="Tempo em minutos" />
+          <q-select v-model="statusForm.status" v-bind="serverErrorProps('status')" outlined dense label="Status" :options="selectedStatusOptions" emit-value map-options />
+          <q-input v-model.number="statusForm.service_time_minutes" v-bind="serverErrorProps('service_time_minutes')" outlined dense type="number" label="Tempo em minutos" />
           <q-input
             v-if="statusForm.status === 'aguardando_usuario'"
             v-model="statusForm.reason"
+            v-bind="serverErrorProps('reason')"
             outlined
             dense
             label="Motivo da pendencia"
-            :rules="[required]"
+            :maxlength="1000"
+            :rules="[required, maxLength(1000)]"
           />
           <q-input
             v-if="statusForm.status === 'resolvido'"
             v-model="statusForm.resolution_summary"
+            v-bind="serverErrorProps('resolution_summary')"
             outlined
             dense
             label="Resumo da solucao"
-            :rules="[required]"
+            :maxlength="1000"
+            :rules="[required, maxLength(1000)]"
           />
-          <q-select v-if="statusForm.status === 'resolvido'" v-model="statusForm.root_cause_id" outlined dense label="Causa catalogada" :options="rootCauseOptions" emit-value map-options clearable />
-          <q-input v-if="statusForm.status === 'resolvido'" v-model="statusForm.identified_cause" outlined dense label="Causa identificada" />
-          <q-input v-if="statusForm.status === 'resolvido'" v-model="statusForm.root_cause" outlined dense label="Causa raiz" />
-          <q-input v-if="statusForm.status === 'resolvido'" v-model="statusForm.applied_solution" outlined dense label="Solucao aplicada" />
-          <q-input v-if="statusForm.status === 'resolvido'" v-model="statusForm.executed_procedure" outlined dense label="Procedimento executado" />
-          <q-input v-if="statusForm.status === 'resolvido'" v-model="statusForm.replaced_part" outlined dense label="Peca substituida" />
-          <q-toggle v-if="statusForm.status === 'resolvido'" v-model="statusForm.requires_follow_up" label="Necessita acompanhamento" />
-          <q-toggle v-if="statusForm.status === 'resolvido'" v-model="statusForm.recurring_problem" label="Problema recorrente" />
-          <q-input v-if="statusForm.status === 'resolvido'" v-model="statusForm.internal_technical_note" outlined dense label="Observacao tecnica interna" />
+          <q-select v-if="statusForm.status === 'resolvido'" v-model="statusForm.root_cause_id" v-bind="serverErrorProps('root_cause_id')" outlined dense label="Causa catalogada" :options="rootCauseOptions" emit-value map-options clearable />
+          <q-input v-if="statusForm.status === 'resolvido'" v-model="statusForm.identified_cause" v-bind="serverErrorProps('identified_cause')" outlined dense label="Causa identificada" :maxlength="255" :rules="[maxLength(255)]" />
+          <q-input v-if="statusForm.status === 'resolvido'" v-model="statusForm.root_cause" v-bind="serverErrorProps('root_cause')" outlined dense label="Causa raiz" :maxlength="1000" :rules="[maxLength(1000)]" />
+          <q-input v-if="statusForm.status === 'resolvido'" v-model="statusForm.applied_solution" v-bind="serverErrorProps('applied_solution')" outlined dense label="Solucao aplicada" :maxlength="1000" :rules="[maxLength(1000)]" />
+          <q-input v-if="statusForm.status === 'resolvido'" v-model="statusForm.executed_procedure" v-bind="serverErrorProps('executed_procedure')" outlined dense label="Procedimento executado" :maxlength="1000" :rules="[maxLength(1000)]" />
+          <q-input v-if="statusForm.status === 'resolvido'" v-model="statusForm.replaced_part" v-bind="serverErrorProps('replaced_part')" outlined dense label="Peca substituida" :maxlength="255" :rules="[maxLength(255)]" />
+          <q-field v-if="statusForm.status === 'resolvido'" borderless v-bind="serverErrorProps('requires_follow_up')"><template #control><q-toggle v-model="statusForm.requires_follow_up" label="Necessita acompanhamento" /></template></q-field>
+          <q-field v-if="statusForm.status === 'resolvido'" borderless v-bind="serverErrorProps('recurring_problem')"><template #control><q-toggle v-model="statusForm.recurring_problem" label="Problema recorrente" /></template></q-field>
+          <q-input v-if="statusForm.status === 'resolvido'" v-model="statusForm.internal_technical_note" v-bind="serverErrorProps('internal_technical_note')" outlined dense label="Observacao tecnica interna" :maxlength="2000" :rules="[maxLength(2000)]" />
           <q-btn v-if="canManageTicket" color="primary" icon="published_with_changes" label="Atualizar status" unelevated :disable="!canSubmitStatus" @click="changeStatus" />
           <q-btn v-if="canEdit && selectedTicket?.resolution_summary" color="secondary" icon="menu_book" label="Criar artigo da solução" outline @click="createKnowledgeArticle" />
           <q-btn v-if="canEdit && selectedTicket && !['encerrado', 'cancelado'].includes(selectedTicket.status)" color="negative" icon="cancel" label="Cancelar chamado" outline @click="cancelSelectedTicket" />
@@ -715,11 +720,11 @@
           <div>
             <span>Observadores</span>
             <div v-if="canEdit" class="row q-gutter-xs q-mt-sm">
-              <q-select v-model="followerUserId" dense outlined :options="followerOptions" emit-value map-options label="Adicionar" class="col" />
-              <q-btn round dense color="primary" icon="person_add" :disable="!followerUserId" @click="addFollower" />
+              <q-select v-model="followerUserId" v-bind="serverErrorProps('user_id')" dense outlined :options="followerOptions" emit-value map-options label="Adicionar" class="col" />
+              <q-btn round dense color="primary" icon="person_add" aria-label="Adicionar observador" :disable="!followerUserId" @click="addFollower" />
             </div>
             <div class="q-mt-sm">
-              <q-chip v-for="follower in selectedTicket.followers || []" :key="follower.id" dense icon="person">{{ follower.name }}<q-btn v-if="canEdit" flat round dense size="xs" icon="close" @click="removeFollower(follower)" /></q-chip>
+              <q-chip v-for="follower in selectedTicket.followers || []" :key="follower.id" dense icon="person">{{ follower.name }}<q-btn v-if="canEdit" flat round dense size="xs" icon="close" :aria-label="`Remover observador ${follower.name}`" @click="removeFollower(follower)" /></q-chip>
               <span v-if="!(selectedTicket.followers || []).length" class="text-caption text-grey-7">Nenhum observador.</span>
             </div>
           </div>
@@ -740,8 +745,8 @@
           <div>
             <span>Tarefas</span>
             <div v-if="canEdit" class="row q-col-gutter-xs q-mt-sm">
-              <q-input v-model="taskForm.title" dense outlined label="Nova tarefa" class="col" />
-              <q-btn round dense color="primary" icon="add" :disable="!taskForm.title" @click="createTask" />
+              <q-input v-model="taskForm.title" v-bind="serverErrorProps('title')" dense outlined label="Nova tarefa" :maxlength="255" :rules="[maxLength(255)]" class="col" />
+              <q-btn round dense color="primary" icon="add" aria-label="Adicionar tarefa" :disable="!taskForm.title" @click="createTask" />
             </div>
             <q-list v-if="selectedTicket.tasks?.length" dense bordered class="q-mt-sm">
               <q-item v-for="task in selectedTicket.tasks" :key="task.id">
@@ -760,10 +765,10 @@
           <div>
             <span>Chamados relacionados</span>
             <div v-if="canEdit" class="row q-col-gutter-xs q-mt-sm">
-              <q-input v-model.number="relationshipForm.related_ticket_id" dense outlined type="number" label="# chamado" class="col" />
-              <q-select v-model="relationshipForm.type" dense outlined :options="relationshipTypes" emit-value map-options label="Tipo" class="col" />
-              <q-btn round dense color="primary" icon="link" :disable="!relationshipForm.related_ticket_id" @click="createRelationship" />
-              <q-btn round dense color="negative" icon="merge_type" :disable="!relationshipForm.related_ticket_id" @click="mergeDuplicate" />
+              <q-input v-model.number="relationshipForm.related_ticket_id" v-bind="serverErrorProps('related_ticket_id')" dense outlined type="number" label="# chamado" class="col" />
+              <q-select v-model="relationshipForm.type" v-bind="serverErrorProps('type')" dense outlined :options="relationshipTypes" emit-value map-options label="Tipo" class="col" />
+              <q-btn round dense color="primary" icon="link" aria-label="Relacionar chamado" :disable="!relationshipForm.related_ticket_id" @click="createRelationship" />
+              <q-btn round dense color="negative" icon="merge_type" aria-label="Mesclar chamado duplicado" :disable="!relationshipForm.related_ticket_id" @click="mergeDuplicate" />
             </div>
             <q-list v-if="selectedTicket.relationships?.length" dense bordered class="q-mt-sm">
               <q-item v-for="relationship in selectedTicket.relationships" :key="relationship.id">
@@ -780,10 +785,10 @@
           <div class="text-subtitle2 q-mb-sm">Avaliacao do atendimento</div>
           <q-form class="row q-col-gutter-sm items-start" @submit="saveEvaluation">
             <div class="col-auto">
-              <q-rating v-model="evaluationForm.rating" size="28px" color="warning" :max="5" />
+              <q-field borderless v-bind="serverErrorProps('rating')"><template #control><q-rating v-model="evaluationForm.rating" size="28px" color="warning" :max="5" /></template></q-field>
             </div>
             <div class="col">
-              <q-input v-model="evaluationForm.comment" outlined dense label="Comentario" />
+              <q-input v-model="evaluationForm.comment" v-bind="serverErrorProps('comment')" outlined dense label="Comentario" :maxlength="1000" :rules="[maxLength(1000)]" />
             </div>
             <div class="col-auto">
               <q-btn type="submit" color="primary" icon="star" label="Avaliar" unelevated />
@@ -837,6 +842,7 @@
             <q-file
               v-if="canManageTicket"
               v-model="attachmentFile"
+              v-bind="serverErrorProps('file')"
               dense
               outlined
               clearable
@@ -853,6 +859,7 @@
               unelevated
               :disable="!attachmentFile"
               :loading="uploadingAttachment"
+              aria-label="Enviar anexo do chamado"
               @click="uploadTicketAttachment"
             >
               <q-tooltip>Enviar anexo</q-tooltip>
@@ -872,10 +879,10 @@
               </q-item-section>
               <q-item-section side>
                 <div class="row no-wrap q-gutter-xs">
-                  <q-btn flat round dense icon="download" @click="downloadAttachment(attachment)">
+                  <q-btn flat round dense icon="download" aria-label="Baixar anexo do chamado" @click="downloadAttachment(attachment)">
                     <q-tooltip>Baixar anexo</q-tooltip>
                   </q-btn>
-                  <q-btn v-if="canManageTicket" flat round dense icon="delete" color="negative" @click="removeTicketAttachment(attachment)">
+                  <q-btn v-if="canManageTicket" flat round dense icon="delete" color="negative" aria-label="Remover anexo do chamado" @click="removeTicketAttachment(attachment)">
                     <q-tooltip>Remover anexo</q-tooltip>
                   </q-btn>
                 </div>
@@ -902,12 +909,12 @@
         <q-card-section>
           <q-form class="row q-col-gutter-sm" @submit="sendMessage">
             <div class="col">
-              <q-select v-if="!requesterOnly && responseTemplates.length" v-model="responseTemplateId" dense outlined clearable label="Usar template" :options="responseTemplateOptions" emit-value map-options @update:model-value="applyResponseTemplate" />
-              <q-input v-model="messageForm.message" outlined dense label="Mensagem" :rules="[required]" />
-              <q-toggle v-if="canEdit" v-model="messageForm.internal" dense label="Nota interna" />
+              <q-select v-if="!requesterOnly && responseTemplates.length" v-model="responseTemplateId" data-local-only dense outlined clearable label="Usar template" :options="responseTemplateOptions" emit-value map-options @update:model-value="applyResponseTemplate" />
+              <q-input v-model="messageForm.message" v-bind="serverErrorProps('message')" outlined dense label="Mensagem" :maxlength="10000" counter :rules="[required, maxLength(10000)]" />
+              <q-field v-if="canEdit" borderless v-bind="serverErrorProps('internal')"><template #control><q-toggle v-model="messageForm.internal" dense label="Nota interna" /></template></q-field>
             </div>
             <div class="col-auto">
-              <q-btn type="submit" color="primary" icon="send" round unelevated>
+              <q-btn type="submit" color="primary" icon="send" round unelevated aria-label="Enviar mensagem">
                 <q-tooltip>Enviar mensagem</q-tooltip>
               </q-btn>
             </div>
@@ -921,11 +928,14 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import ItSlaCalendars from '@/components/ItSlaCalendars.vue'
+import BrazilianPhoneInput from '@/components/BrazilianPhoneInput.vue'
 import { useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { apiDownload, apiFetch, apiUpload } from '@/services/api'
+import { clearServerValidationErrors, serverErrorProps } from '@/services/server-validation'
 import { useAuthStore } from '@/stores/auth-store'
 import { formatDateTime } from '@/composables/useDateFormat'
+import { maxLength } from '@/utils/form-validation'
 
 const $q = useQuasar()
 const auth = useAuthStore()
@@ -1095,7 +1105,7 @@ const ticketColumns = [
   { name: 'priority', label: 'Prioridade', field: 'priority', align: 'left' },
   { name: 'status', label: 'Status', field: 'status', align: 'left' },
   { name: 'assignee', label: 'Tecnico', field: row => row.assignee?.name || '-', align: 'left' },
-  { name: 'sla_due_at', label: 'SLA', field: 'sla_due_at', align: 'left' },
+  { name: 'sla_due_at', label: 'SLA', field: row => formatDateTime(row.sla_due_at), align: 'left' },
   { name: 'actions', label: '', field: 'actions', align: 'right' }
 ]
 

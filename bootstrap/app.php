@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function ($schedule): void {
         $schedule->command('it:process-escalations')->everyFiveMinutes()->withoutOverlapping();
         $schedule->command('it:process-preventive-maintenance')->dailyAt('06:00')->withoutOverlapping();
+        $schedule->command('siges:prune-tokens')->dailyAt('02:30')->withoutOverlapping();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);

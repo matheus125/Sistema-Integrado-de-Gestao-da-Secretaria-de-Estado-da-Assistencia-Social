@@ -266,6 +266,7 @@ class ItTicketToolsTest extends TestCase
             ['key' => 'it_sla_alert_lead_minutes', 'value' => 90],
             ['key' => 'it_automation_enabled', 'value' => false],
             ['key' => 'whatsapp_business_enabled', 'value' => true],
+            ['key' => 'whatsapp_business_verify_token', 'value' => '8b53e70fa62c49d18a05f37ce9241bd6a503e7d82c16f49a'],
         ]])->assertOk();
 
         $this->assertSame(90, SystemSetting::where('key', 'it_sla_alert_lead_minutes')->first()->value['value']);

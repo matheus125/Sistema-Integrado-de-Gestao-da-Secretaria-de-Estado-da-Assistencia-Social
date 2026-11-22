@@ -124,10 +124,10 @@
             </template>
             <template #body-cell-actions="props">
               <q-td :props="props">
-                <q-btn v-if="canEdit" flat round dense icon="edit" @click="openVehicle(props.row)">
+                <q-btn v-if="canEdit" flat round dense icon="edit" aria-label="Editar veículo" @click="openVehicle(props.row)">
                   <q-tooltip>Editar veiculo</q-tooltip>
                 </q-btn>
-                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" @click="removeVehicle(props.row)">
+                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" aria-label="Excluir veículo" @click="removeVehicle(props.row)">
                   <q-tooltip>Excluir veiculo</q-tooltip>
                 </q-btn>
               </q-td>
@@ -148,10 +148,10 @@
           >
             <template #body-cell-actions="props">
               <q-td :props="props">
-                <q-btn v-if="canEdit" flat round dense icon="edit" @click="openDriver(props.row)">
+                <q-btn v-if="canEdit" flat round dense icon="edit" aria-label="Editar motorista" @click="openDriver(props.row)">
                   <q-tooltip>Editar motorista</q-tooltip>
                 </q-btn>
-                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" @click="removeDriver(props.row)">
+                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" aria-label="Excluir motorista" @click="removeDriver(props.row)">
                   <q-tooltip>Excluir motorista</q-tooltip>
                 </q-btn>
               </q-td>
@@ -181,7 +181,7 @@
                 <q-select v-model="requestFilters.driver_id" dense outlined label="Motorista" :options="driverOptions" emit-value map-options clearable @update:model-value="loadRequests" />
                 <q-input v-model="requestFilters.date_from" dense outlined type="date" label="De" @update:model-value="loadRequests" />
                 <q-input v-model="requestFilters.date_to" dense outlined type="date" label="Ate" @update:model-value="loadRequests" />
-                <q-btn flat round icon="filter_alt" @click="clearRequestFilters">
+                <q-btn flat round icon="filter_alt" aria-label="Limpar filtros de solicitações" @click="clearRequestFilters">
                   <q-tooltip>Limpar filtros</q-tooltip>
                 </q-btn>
               </div>
@@ -193,13 +193,13 @@
             </template>
             <template #body-cell-actions="props">
               <q-td :props="props">
-                <q-btn flat round dense icon="visibility" @click="openRequestDetail(props.row)">
+                <q-btn flat round dense icon="visibility" aria-label="Detalhar solicitação" @click="openRequestDetail(props.row)">
                   <q-tooltip>Detalhar solicitacao</q-tooltip>
                 </q-btn>
-                <q-btn v-if="canEdit" flat round dense icon="edit" @click="openRequest(props.row)">
+                <q-btn v-if="canEdit" flat round dense icon="edit" aria-label="Editar solicitação" @click="openRequest(props.row)">
                   <q-tooltip>Editar solicitacao</q-tooltip>
                 </q-btn>
-                <q-btn v-if="canApprove && nextStatuses(props.row).length" flat round dense icon="sync_alt" color="primary">
+                <q-btn v-if="canApprove && nextStatuses(props.row).length" flat round dense icon="sync_alt" color="primary" aria-label="Alterar status da solicitação">
                   <q-tooltip>Alterar status</q-tooltip>
                   <q-menu>
                     <q-list style="min-width: 220px">
@@ -218,10 +218,10 @@
                     </q-list>
                   </q-menu>
                 </q-btn>
-                <q-btn v-if="canApprove && nextStatuses(props.row).includes('aprovada')" flat round dense icon="check_circle" color="positive" @click="approveRequest(props.row)">
+                <q-btn v-if="canApprove && nextStatuses(props.row).includes('aprovada')" flat round dense icon="check_circle" color="positive" aria-label="Aprovar solicitação" @click="approveRequest(props.row)">
                   <q-tooltip>Aprovar</q-tooltip>
                 </q-btn>
-                <q-btn v-if="canCancel && nextStatuses(props.row).includes('cancelada')" flat round dense icon="cancel" color="negative" @click="cancelRequest(props.row)">
+                <q-btn v-if="canCancel && nextStatuses(props.row).includes('cancelada')" flat round dense icon="cancel" color="negative" aria-label="Cancelar solicitação" @click="cancelRequest(props.row)">
                   <q-tooltip>Cancelar</q-tooltip>
                 </q-btn>
               </q-td>
@@ -265,10 +265,10 @@
             </template>
             <template #body-cell-actions="props">
               <q-td :props="props">
-                <q-btn v-if="canEdit" flat round dense icon="edit" @click="openMaintenance(props.row)">
+                <q-btn v-if="canEdit" flat round dense icon="edit" aria-label="Editar manutenção" @click="openMaintenance(props.row)">
                   <q-tooltip>Editar manutencao</q-tooltip>
                 </q-btn>
-                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" @click="removeMaintenance(props.row)">
+                <q-btn v-if="canDelete" flat round dense icon="delete" color="negative" aria-label="Excluir manutenção" @click="removeMaintenance(props.row)">
                   <q-tooltip>Excluir manutencao</q-tooltip>
                 </q-btn>
               </q-td>
@@ -285,7 +285,7 @@
             <div class="row q-gutter-sm items-center">
               <q-input v-model="agendaFilters.date_from" dense outlined type="date" label="De" @update:model-value="loadAgenda" />
               <q-input v-model="agendaFilters.date_to" dense outlined type="date" label="Ate" @update:model-value="loadAgenda" />
-              <q-btn flat round icon="refresh" :loading="agendaLoading" @click="loadAgenda">
+              <q-btn flat round icon="refresh" aria-label="Atualizar agenda" :loading="agendaLoading" @click="loadAgenda">
                 <q-tooltip>Atualizar agenda</q-tooltip>
               </q-btn>
             </div>
@@ -318,7 +318,7 @@
             </div>
             <div class="row q-gutter-sm items-center">
               <q-input v-model="availabilityDate" dense outlined type="date" label="Data" @update:model-value="loadAvailability" />
-              <q-btn flat round icon="refresh" :loading="availabilityLoading" @click="loadAvailability">
+              <q-btn flat round icon="refresh" aria-label="Atualizar disponibilidade" :loading="availabilityLoading" @click="loadAvailability">
                 <q-tooltip>Atualizar disponibilidade</q-tooltip>
               </q-btn>
             </div>
@@ -369,6 +369,7 @@
                   dense
                   icon="add_road"
                   color="accent"
+                  aria-label="Solicitar este veículo"
                   @click="openRequestFromAvailability(props.row)"
                 >
                   <q-tooltip>Solicitar este veiculo</q-tooltip>
@@ -419,24 +420,24 @@
       </q-tab-panels>
     </section>
 
-    <q-dialog v-model="vehicleDialog">
+    <q-dialog v-model="vehicleDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">{{ vehicleForm.id ? 'Editar veiculo' : 'Novo veiculo' }}</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar veículo" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveVehicle">
           <q-card-section class="form-grid">
-            <q-input v-model="vehicleForm.brand" outlined label="Marca" :rules="[required]" />
-            <q-input v-model="vehicleForm.model" outlined label="Modelo" :rules="[required]" />
-            <q-input v-model.number="vehicleForm.year" outlined type="number" label="Ano" />
-            <q-input v-model="vehicleForm.plate" outlined label="Placa" :rules="[required]" />
-            <q-input v-model="vehicleForm.color" outlined label="Cor" />
-            <q-input v-model.number="vehicleForm.capacity" outlined type="number" label="Capacidade" />
-            <q-input v-model.number="vehicleForm.current_km" outlined type="number" label="KM atual" />
-            <q-select v-model="vehicleForm.status" outlined label="Situacao" :options="vehicleStatuses" emit-value map-options />
-            <q-input v-model="vehicleForm.notes" outlined type="textarea" label="Observacoes" class="span-2" />
+            <q-input v-model="vehicleForm.brand" v-bind="serverErrorProps('brand')" outlined label="Marca" :maxlength="120" :rules="[required, maxLength(120)]" />
+            <q-input v-model="vehicleForm.model" v-bind="serverErrorProps('model')" outlined label="Modelo" :maxlength="120" :rules="[required, maxLength(120)]" />
+            <q-input v-model.number="vehicleForm.year" v-bind="serverErrorProps('year')" outlined type="number" label="Ano" />
+            <BrazilianVehiclePlateInput v-model="vehicleForm.plate" v-bind="serverErrorProps('plate')" outlined label="Placa" :rules="[required]" />
+            <q-input v-model="vehicleForm.color" v-bind="serverErrorProps('color')" outlined label="Cor" :maxlength="60" :rules="[maxLength(60)]" />
+            <q-input v-model.number="vehicleForm.capacity" v-bind="serverErrorProps('capacity')" outlined type="number" label="Capacidade" />
+            <q-input v-model.number="vehicleForm.current_km" v-bind="serverErrorProps('current_km')" outlined type="number" label="KM atual" />
+            <q-select v-model="vehicleForm.status" v-bind="serverErrorProps('status')" outlined label="Situacao" :options="vehicleStatuses" emit-value map-options />
+            <q-input v-model="vehicleForm.notes" v-bind="serverErrorProps('notes')" outlined type="textarea" label="Observacoes" :maxlength="4000" counter :rules="[maxLength(4000)]" class="span-2" />
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat label="Cancelar" v-close-popup />
@@ -446,21 +447,21 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="driverDialog">
+    <q-dialog v-model="driverDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">{{ driverForm.id ? 'Editar motorista' : 'Novo motorista' }}</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar motorista" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveDriver">
           <q-card-section class="form-grid">
-            <q-input v-model="driverForm.name" outlined label="Nome" :rules="[required]" class="span-2" />
-            <q-input v-model="driverForm.cnh" outlined label="CNH" :rules="[required]" />
-            <q-input v-model="driverForm.cnh_category" outlined label="Categoria" :rules="[required]" />
-            <q-input v-model="driverForm.cnh_expires_at" outlined type="date" label="Validade" :rules="[required]" />
-            <q-input v-model="driverForm.phone" outlined label="Telefone" />
-            <q-select v-model="driverForm.status" outlined label="Situacao" :options="driverStatuses" emit-value map-options />
+            <q-input v-model="driverForm.name" v-bind="serverErrorProps('name')" outlined label="Nome" :maxlength="160" :rules="[required, maxLength(160)]" class="span-2" />
+            <q-input v-model="driverForm.cnh" v-bind="serverErrorProps('cnh')" outlined label="CNH" :maxlength="40" :rules="[required, maxLength(40)]" />
+            <q-input v-model="driverForm.cnh_category" v-bind="serverErrorProps('cnh_category')" outlined label="Categoria" :maxlength="10" :rules="[required, maxLength(10)]" />
+            <q-input v-model="driverForm.cnh_expires_at" v-bind="serverErrorProps('cnh_expires_at')" outlined type="date" label="Validade" :rules="[required]" />
+            <BrazilianPhoneInput v-model="driverForm.phone" v-bind="serverErrorProps('phone')" outlined label="Telefone" />
+            <q-select v-model="driverForm.status" v-bind="serverErrorProps('status')" outlined label="Situacao" :options="driverStatuses" emit-value map-options />
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat label="Cancelar" v-close-popup />
@@ -470,27 +471,27 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="maintenanceDialog">
+    <q-dialog v-model="maintenanceDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card request-dialog">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">{{ maintenanceForm.id ? 'Editar manutencao' : 'Nova manutencao' }}</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar manutenção" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveMaintenance">
           <q-card-section class="form-grid">
-            <q-select v-model="maintenanceForm.vehicle_id" outlined label="Veiculo" :options="vehicleOptions" emit-value map-options :rules="[required]" />
-            <q-select v-model="maintenanceForm.type" outlined label="Tipo" :options="maintenanceTypeOptions" emit-value map-options :rules="[required]" />
-            <q-select v-model="maintenanceForm.status" outlined label="Status" :options="maintenanceStatusOptions" emit-value map-options />
-            <q-input v-model="maintenanceForm.scheduled_at" outlined type="date" label="Agendada para" />
-            <q-input v-model="maintenanceForm.completed_at" outlined type="date" label="Concluida em" />
-            <q-input v-model.number="maintenanceForm.odometer" outlined type="number" label="KM da manutencao" />
-            <q-input v-model.number="maintenanceForm.next_due_km" outlined type="number" label="Proximo KM" />
-            <q-input v-model="maintenanceForm.next_due_at" outlined type="date" label="Proxima data" />
-            <q-input v-model.number="maintenanceForm.cost" outlined type="number" step="0.01" label="Custo" />
-            <q-input v-model="maintenanceForm.supplier" outlined label="Fornecedor" />
-            <q-input v-model="maintenanceForm.description" outlined type="textarea" label="Descricao" :rules="[required]" class="span-2" />
-            <q-input v-model="maintenanceForm.notes" outlined type="textarea" label="Observacoes" class="span-2" />
+            <q-select v-model="maintenanceForm.vehicle_id" v-bind="serverErrorProps('vehicle_id')" outlined label="Veiculo" :options="vehicleOptions" emit-value map-options :rules="[required]" />
+            <q-select v-model="maintenanceForm.type" v-bind="serverErrorProps('type')" outlined label="Tipo" :options="maintenanceTypeOptions" emit-value map-options :rules="[required]" />
+            <q-select v-model="maintenanceForm.status" v-bind="serverErrorProps('status')" outlined label="Status" :options="maintenanceStatusOptions" emit-value map-options />
+            <q-input v-model="maintenanceForm.scheduled_at" v-bind="serverErrorProps('scheduled_at')" outlined type="date" label="Agendada para" />
+            <q-input v-model="maintenanceForm.completed_at" v-bind="serverErrorProps('completed_at')" outlined type="date" label="Concluida em" />
+            <q-input v-model.number="maintenanceForm.odometer" v-bind="serverErrorProps('odometer')" outlined type="number" label="KM da manutencao" />
+            <q-input v-model.number="maintenanceForm.next_due_km" v-bind="serverErrorProps('next_due_km')" outlined type="number" label="Proximo KM" />
+            <q-input v-model="maintenanceForm.next_due_at" v-bind="serverErrorProps('next_due_at')" outlined type="date" label="Proxima data" />
+            <BrlCurrencyInput v-model="maintenanceForm.cost" v-bind="serverErrorProps('cost')" outlined label="Custo" :max-integer-digits="9" />
+            <q-input v-model="maintenanceForm.supplier" v-bind="serverErrorProps('supplier')" outlined label="Fornecedor" :maxlength="160" :rules="[maxLength(160)]" />
+            <q-input v-model="maintenanceForm.description" v-bind="serverErrorProps('description')" outlined type="textarea" label="Descricao" :maxlength="1000" counter :rules="[required, maxLength(1000)]" class="span-2" />
+            <q-input v-model="maintenanceForm.notes" v-bind="serverErrorProps('notes')" outlined type="textarea" label="Observacoes" :maxlength="1000" counter :rules="[maxLength(1000)]" class="span-2" />
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat label="Cancelar" v-close-popup />
@@ -500,29 +501,29 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="requestDialog">
+    <q-dialog v-model="requestDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card request-dialog">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">{{ requestForm.id ? 'Editar solicitacao' : 'Solicitar veiculo' }}</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar solicitação" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveRequest">
           <q-card-section class="form-grid">
-            <q-select v-model="requestForm.department_id" outlined label="Setor solicitante" :options="departmentOptions" emit-value map-options :rules="[required]" />
-            <q-select v-model="requestForm.vehicle_id" outlined label="Veiculo" :options="vehicleOptions" emit-value map-options clearable />
-            <q-select v-model="requestForm.driver_id" outlined label="Motorista" :options="driverOptions" emit-value map-options clearable />
-            <q-input v-model="requestForm.responsible" outlined label="Responsavel" :rules="[required]" />
-            <q-input v-model="requestForm.origin" outlined label="Origem" :rules="[required]" />
-            <q-input v-model="requestForm.destination" outlined label="Destino" :rules="[required]" />
-            <q-input v-model="requestForm.date" outlined type="date" label="Data" :rules="[required]" />
-            <q-input v-model="requestForm.departure_time" outlined type="time" label="Hora saida" :rules="[required]" />
-            <q-input v-model="requestForm.expected_arrival_time" outlined type="time" label="Previsao chegada" />
-            <q-input v-model.number="requestForm.passengers_count" outlined type="number" label="Passageiros" :rules="[required]" />
-            <q-input v-model.number="requestForm.initial_km" outlined type="number" label="KM inicial" />
-            <q-input v-model.number="requestForm.final_km" outlined type="number" label="KM final" />
-            <q-input v-model="requestForm.route_description" outlined type="textarea" label="Descricao/Roteiro" :rules="[required]" class="span-2" />
-            <q-input v-model="requestForm.notes" outlined type="textarea" label="Observacoes" class="span-2" />
+            <q-select v-model="requestForm.department_id" v-bind="serverErrorProps('department_id')" outlined label="Setor solicitante" :options="departmentOptions" emit-value map-options :rules="[required]" />
+            <q-select v-model="requestForm.vehicle_id" v-bind="serverErrorProps('vehicle_id')" outlined label="Veiculo" :options="vehicleOptions" emit-value map-options clearable />
+            <q-select v-model="requestForm.driver_id" v-bind="serverErrorProps('driver_id')" outlined label="Motorista" :options="driverOptions" emit-value map-options clearable />
+            <q-input v-model="requestForm.responsible" v-bind="serverErrorProps('responsible')" outlined label="Responsavel" :maxlength="160" :rules="[required, maxLength(160)]" />
+            <q-input v-model="requestForm.origin" v-bind="serverErrorProps('origin')" outlined label="Origem" :maxlength="160" :rules="[required, maxLength(160)]" />
+            <q-input v-model="requestForm.destination" v-bind="serverErrorProps('destination')" outlined label="Destino" :maxlength="160" :rules="[required, maxLength(160)]" />
+            <q-input v-model="requestForm.date" v-bind="serverErrorProps('date')" outlined type="date" label="Data" :rules="[required]" />
+            <q-input v-model="requestForm.departure_time" v-bind="serverErrorProps('departure_time')" outlined type="time" label="Hora saida" :rules="[required]" />
+            <q-input v-model="requestForm.expected_arrival_time" v-bind="serverErrorProps('expected_arrival_time')" outlined type="time" label="Previsao chegada" />
+            <q-input v-model.number="requestForm.passengers_count" v-bind="serverErrorProps('passengers_count')" outlined type="number" label="Passageiros" :rules="[required]" />
+            <q-input v-model.number="requestForm.initial_km" v-bind="serverErrorProps('initial_km')" outlined type="number" label="KM inicial" />
+            <q-input v-model.number="requestForm.final_km" v-bind="serverErrorProps('final_km')" outlined type="number" label="KM final" />
+            <q-input v-model="requestForm.route_description" v-bind="serverErrorProps('route_description')" outlined type="textarea" label="Descricao/Roteiro" :maxlength="4000" counter :rules="[required, maxLength(4000)]" class="span-2" />
+            <q-input v-model="requestForm.notes" v-bind="serverErrorProps('notes')" outlined type="textarea" label="Observacoes" :maxlength="4000" counter :rules="[maxLength(4000)]" class="span-2" />
             <div v-if="requestForm.id" class="attachment-panel span-2">
               <div class="attachment-header">
                 <div>
@@ -532,6 +533,7 @@
                 <q-file
                   v-if="canEdit"
                   v-model="requestAttachmentFile"
+                  v-bind="serverErrorProps('file')"
                   dense
                   outlined
                   clearable
@@ -548,6 +550,7 @@
                   unelevated
                   :disable="!requestAttachmentFile"
                   :loading="uploadingRequestAttachment"
+                  aria-label="Enviar anexo da solicitação"
                   @click.prevent="uploadRequestAttachment"
                 >
                   <q-tooltip>Enviar anexo</q-tooltip>
@@ -567,10 +570,10 @@
                   </q-item-section>
                   <q-item-section side>
                     <div class="row no-wrap q-gutter-xs">
-                      <q-btn flat round dense icon="download" @click.prevent="downloadAttachment(attachment)">
+                      <q-btn flat round dense icon="download" aria-label="Baixar anexo da solicitação" @click.prevent="downloadAttachment(attachment)">
                         <q-tooltip>Baixar anexo</q-tooltip>
                       </q-btn>
-                      <q-btn v-if="canEdit" flat round dense icon="delete" color="negative" @click.prevent="removeRequestAttachment(attachment)">
+                      <q-btn v-if="canEdit" flat round dense icon="delete" color="negative" aria-label="Remover anexo da solicitação" @click.prevent="removeRequestAttachment(attachment)">
                         <q-tooltip>Remover anexo</q-tooltip>
                       </q-btn>
                     </div>
@@ -599,7 +602,7 @@
             <q-badge v-if="selectedRequest" :color="statusColor(selectedRequest.status)" outline>
               {{ statusLabel(selectedRequest.status) }}
             </q-badge>
-            <q-btn flat round dense icon="close" v-close-popup />
+            <q-btn flat round dense icon="close" aria-label="Fechar detalhes da solicitação" v-close-popup />
           </div>
         </q-card-section>
         <q-separator />
@@ -698,36 +701,39 @@
       </q-card>
     </q-dialog>
 
-    <q-dialog v-model="checklistDialog">
+    <q-dialog v-model="checklistDialog" @before-show="clearServerValidationErrors">
       <q-card class="dialog-card request-dialog">
         <q-card-section class="row items-center justify-between">
           <div>
             <div class="text-h6">{{ checklistTargetStatus === 'em_deslocamento' ? 'Checklist de saida' : 'Checklist de retorno' }}</div>
             <div class="text-caption text-grey-7">Solicitacao #{{ checklistRequest?.id }}</div>
           </div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar checklist" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-form @submit="saveChecklist">
           <q-card-section class="form-grid">
-            <q-input v-model.number="checklistForm.km" outlined type="number" label="KM" :rules="[required]" />
-            <q-input v-model.number="checklistForm.fuel_level" outlined type="number" label="Combustivel (%)" min="0" max="100" />
-            <q-toggle v-model="checklistForm.documents_ok" label="Documentos conferidos" />
-            <q-toggle v-model="checklistForm.tires_ok" label="Pneus em condicao" />
-            <q-toggle v-model="checklistForm.lights_ok" label="Luzes em condicao" />
-            <q-toggle v-model="checklistForm.bodywork_ok" label="Lataria sem avarias novas" />
-            <q-toggle v-model="checklistForm.tools_ok" label="Itens obrigatorios conferidos" />
-            <q-toggle v-model="checklistForm.has_damage" label="Ha avarias ou danos" color="negative" />
+            <q-input v-model.number="checklistForm.km" v-bind="serverErrorProps('km')" outlined type="number" label="KM" :rules="[required]" />
+            <q-input v-model.number="checklistForm.fuel_level" v-bind="serverErrorProps('fuel_level')" outlined type="number" label="Combustivel (%)" min="0" max="100" />
+            <q-field borderless v-bind="serverErrorProps('documents_ok')"><template #control><q-toggle v-model="checklistForm.documents_ok" label="Documentos conferidos" /></template></q-field>
+            <q-field borderless v-bind="serverErrorProps('tires_ok')"><template #control><q-toggle v-model="checklistForm.tires_ok" label="Pneus em condicao" /></template></q-field>
+            <q-field borderless v-bind="serverErrorProps('lights_ok')"><template #control><q-toggle v-model="checklistForm.lights_ok" label="Luzes em condicao" /></template></q-field>
+            <q-field borderless v-bind="serverErrorProps('bodywork_ok')"><template #control><q-toggle v-model="checklistForm.bodywork_ok" label="Lataria sem avarias novas" /></template></q-field>
+            <q-field borderless v-bind="serverErrorProps('tools_ok')"><template #control><q-toggle v-model="checklistForm.tools_ok" label="Itens obrigatorios conferidos" /></template></q-field>
+            <q-field borderless v-bind="serverErrorProps('has_damage')"><template #control><q-toggle v-model="checklistForm.has_damage" label="Ha avarias ou danos" color="negative" /></template></q-field>
             <q-input
               v-if="checklistForm.has_damage || !checklistForm.bodywork_ok"
               v-model="checklistForm.damages_description"
+              v-bind="serverErrorProps('damages_description')"
               outlined
               type="textarea"
               label="Descricao das avarias"
+              :maxlength="1000"
+              counter
               class="span-2"
-              :rules="[required]"
+              :rules="[required, maxLength(1000)]"
             />
-            <q-input v-model="checklistForm.observations" outlined type="textarea" label="Observacoes" class="span-2" />
+            <q-input v-model="checklistForm.observations" v-bind="serverErrorProps('observations')" outlined type="textarea" label="Observacoes" :maxlength="1000" counter :rules="[maxLength(1000)]" class="span-2" />
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat label="Cancelar" v-close-popup />
@@ -743,8 +749,14 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useQuasar } from 'quasar'
 import { apiDownload, apiFetch, apiUpload } from '@/services/api'
+import { clearServerValidationErrors, serverErrorProps } from '@/services/server-validation'
 import { useAuthStore } from '@/stores/auth-store'
 import { formatDate, formatDateTime } from '@/composables/useDateFormat'
+import { formatBrlCurrency } from '@/utils/brl-currency'
+import { maxLength } from '@/utils/form-validation'
+import BrazilianPhoneInput from '@/components/BrazilianPhoneInput.vue'
+import BrazilianVehiclePlateInput from '@/components/BrazilianVehiclePlateInput.vue'
+import BrlCurrencyInput from '@/components/BrlCurrencyInput.vue'
 
 const $q = useQuasar()
 const auth = useAuthStore()
@@ -852,13 +864,13 @@ const driverColumns = [
   { name: 'name', label: 'Nome', field: 'name', align: 'left' },
   { name: 'cnh', label: 'CNH', field: 'cnh', align: 'left' },
   { name: 'cnh_category', label: 'Categoria', field: 'cnh_category', align: 'left' },
-  { name: 'cnh_expires_at', label: 'Validade', field: 'cnh_expires_at', align: 'left' },
+  { name: 'cnh_expires_at', label: 'Validade', field: row => formatDate(row.cnh_expires_at), align: 'left' },
   { name: 'status', label: 'Situacao', field: 'status', align: 'left' },
   { name: 'actions', label: '', field: 'actions', align: 'right' }
 ]
 
 const requestColumns = [
-  { name: 'date', label: 'Data', field: 'date', align: 'left' },
+  { name: 'date', label: 'Data', field: row => formatDate(row.date), align: 'left' },
   { name: 'department', label: 'Setor', field: row => row.department?.name, align: 'left' },
   { name: 'vehicle', label: 'Veiculo', field: row => row.vehicle?.plate || '-', align: 'left' },
   { name: 'driver', label: 'Motorista', field: row => row.driver?.name || '-', align: 'left' },
@@ -890,7 +902,7 @@ const maintenanceColumns = [
   { name: 'scheduled_at', label: 'Agendada', field: 'scheduled_at', align: 'left', format: value => formatDate(value) },
   { name: 'next_due_at', label: 'Prox. data', field: 'next_due_at', align: 'left', format: value => formatDate(value) },
   { name: 'next_due_km', label: 'Prox. KM', field: 'next_due_km', align: 'right' },
-  { name: 'cost', label: 'Custo', field: 'cost', align: 'right', format: value => formatMoney(value) },
+  { name: 'cost', label: 'Custo', field: 'cost', align: 'right', format: value => formatBrlCurrency(value) || '-' },
   { name: 'actions', label: '', field: 'actions', align: 'right' }
 ]
 
@@ -1443,11 +1455,6 @@ function isMaintenanceSoon(row) {
   const due = row.next_due_at ? new Date(`${row.next_due_at}T00:00:00`) : null
   const currentKm = Number(row.vehicle?.current_km || 0)
   return Boolean((due && due >= today && due <= new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)) || (row.next_due_km && currentKm >= Number(row.next_due_km) - 500))
-}
-
-function formatMoney(value) {
-  const amount = Number(value || 0)
-  return amount ? amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '-'
 }
 
 function availabilityLabel(row) {

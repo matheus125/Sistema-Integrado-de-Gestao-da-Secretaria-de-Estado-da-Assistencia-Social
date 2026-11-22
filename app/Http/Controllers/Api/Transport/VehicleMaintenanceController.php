@@ -135,7 +135,7 @@ class VehicleMaintenanceController extends Controller
             'odometer' => ['nullable', 'integer', 'min:0'],
             'next_due_km' => ['nullable', 'integer', 'min:0'],
             'next_due_at' => ['nullable', 'date'],
-            'cost' => ['nullable', 'numeric', 'min:0', 'max:999999999.99'],
+            'cost' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999.99'],
             'supplier' => ['nullable', 'string', 'max:160'],
             'description' => [$required, 'string', 'max:1000'],
             'notes' => ['nullable', 'string', 'max:1000'],

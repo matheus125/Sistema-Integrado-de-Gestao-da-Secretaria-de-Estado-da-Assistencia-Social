@@ -4,19 +4,26 @@ namespace App\Http\Controllers\Api\Transport;
 
 use App\Http\Controllers\Controller;
 use App\Models\Vehicle;
+use App\Rules\BrazilianVehiclePlateRule;
+use App\Rules\RenavamRule;
+use App\Support\BrazilianVehiclePlate;
+use App\Support\Renavam;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class VehicleController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
         $search = $request->string('search')->toString();
+        $normalizedPlate = BrazilianVehiclePlate::normalize($search);
 
         $vehicles = Vehicle::query()
-            ->when($search, fn ($query) => $query->where(function ($query) use ($search) {
+            ->when($search, fn ($query) => $query->where(function ($query) use ($search, $normalizedPlate) {
                 $query->where('plate', 'like', "%{$search}%")
+                    ->when($normalizedPlate, fn ($query, $plate) => $query->orWhere('plate', 'like', "%{$plate}%"))
                     ->orWhere('brand', 'like', "%{$search}%")
                     ->orWhere('model', 'like', "%{$search}%");
             }))
@@ -61,15 +68,27 @@ class VehicleController extends Controller
 
     private function validatedData(Request $request, ?Vehicle $vehicle = null): array
     {
-        return $request->validate([
+        $normalizedPlate = BrazilianVehiclePlate::normalize($request->input('plate'));
+
+        if ($normalizedPlate !== null) {
+            $request->merge(['plate' => $normalizedPlate]);
+        }
+
+        $normalizedRenavam = Renavam::normalize($request->input('renavam'));
+
+        if ($normalizedRenavam !== null) {
+            $request->merge(['renavam' => $normalizedRenavam]);
+        }
+
+        $data = $request->validate([
             'brand' => ['required', 'string', 'max:120'],
             'model' => ['required', 'string', 'max:120'],
             'year' => ['nullable', 'integer', 'min:1950', 'max:2100'],
             'category' => ['nullable', 'string', 'max:80'],
             'type' => ['nullable', 'string', 'max:80'],
             'color' => ['nullable', 'string', 'max:60'],
-            'plate' => ['required', 'string', 'max:20', Rule::unique('vehicles', 'plate')->ignore($vehicle)],
-            'renavam' => ['nullable', 'string', 'max:40', Rule::unique('vehicles', 'renavam')->ignore($vehicle)],
+            'plate' => ['required', 'string', 'max:8', new BrazilianVehiclePlateRule, Rule::unique('vehicles', 'plate')->ignore($vehicle)],
+            'renavam' => ['nullable', 'string', 'size:11', new RenavamRule, Rule::unique('vehicles', 'renavam')->ignore($vehicle)],
             'chassis' => ['nullable', 'string', 'max:80', Rule::unique('vehicles', 'chassis')->ignore($vehicle)],
             'fuel' => ['nullable', 'string', 'max:60'],
             'capacity' => ['nullable', 'integer', 'min:1', 'max:100'],
@@ -77,7 +96,22 @@ class VehicleController extends Controller
             'current_km' => ['nullable', 'integer', 'min:0'],
             'last_maintenance_at' => ['nullable', 'date'],
             'next_licensing_at' => ['nullable', 'date'],
-            'notes' => ['nullable', 'string'],
+            'notes' => ['nullable', 'string', 'max:4000'],
         ]);
+
+        $hasCanonicalDuplicate = Vehicle::withTrashed()
+            ->when($vehicle, fn ($query) => $query->whereKeyNot($vehicle->id))
+            ->pluck('plate')
+            ->contains(
+                static fn (mixed $plate): bool => BrazilianVehiclePlate::normalize($plate) === $data['plate'],
+            );
+
+        if ($hasCanonicalDuplicate) {
+            throw ValidationException::withMessages([
+                'plate' => 'Já existe um veículo com esta placa.',
+            ]);
+        }
+
+        return $data;
     }
 }

@@ -24,18 +24,18 @@
             <q-icon name="search" />
           </template>
           <template #append>
-            <q-btn flat dense round icon="arrow_forward" @click="runSearch">
+            <q-btn flat dense round icon="arrow_forward" aria-label="Buscar" @click="runSearch">
               <q-tooltip>Buscar</q-tooltip>
             </q-btn>
           </template>
         </q-input>
 
-        <q-btn flat round icon="notifications" :loading="notificationsLoading" @click="openNotifications">
+        <q-btn flat round icon="notifications" aria-label="Abrir notificações" :loading="notificationsLoading" @click="openNotifications">
           <q-badge v-if="notifications.length" color="warning" floating>{{ notifications.length }}</q-badge>
           <q-tooltip>Notificacoes</q-tooltip>
         </q-btn>
 
-        <q-btn flat round icon="account_circle">
+        <q-btn flat round icon="account_circle" aria-label="Abrir menu do usuário">
           <q-menu>
             <q-list style="min-width: 240px">
               <q-item>
@@ -45,6 +45,12 @@
                 </q-item-section>
               </q-item>
               <q-separator />
+              <q-item clickable v-close-popup @click="openSessions">
+                <q-item-section avatar>
+                  <q-icon name="security" />
+                </q-item-section>
+                <q-item-section>Dispositivos e sessoes</q-item-section>
+              </q-item>
               <q-item clickable v-close-popup @click="logout">
                 <q-item-section avatar>
                   <q-icon name="logout" />
@@ -93,7 +99,7 @@
       <q-card class="dialog-card">
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">Resultado da busca</div>
-          <q-btn flat round dense icon="close" v-close-popup />
+          <q-btn flat round dense icon="close" aria-label="Fechar resultados da busca" v-close-popup />
         </q-card-section>
         <q-separator />
         <q-card-section>
@@ -121,10 +127,10 @@
         <q-card-section class="row items-center justify-between">
           <div class="text-h6">Notificacoes</div>
           <div class="row q-gutter-xs">
-            <q-btn flat round dense icon="refresh" :loading="notificationsLoading" @click="loadNotifications">
+            <q-btn flat round dense icon="refresh" aria-label="Atualizar notificações" :loading="notificationsLoading" @click="loadNotifications">
               <q-tooltip>Atualizar notificacoes</q-tooltip>
             </q-btn>
-            <q-btn flat round dense icon="close" v-close-popup />
+            <q-btn flat round dense icon="close" aria-label="Fechar notificações" v-close-popup />
           </div>
         </q-card-section>
         <q-separator />
@@ -144,6 +150,55 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="showSessions">
+      <q-card class="dialog-card">
+        <q-card-section class="row items-center justify-between">
+          <div>
+            <div class="text-h6">Dispositivos e sessoes</div>
+            <div class="text-caption text-grey-7">Revogue acessos que voce nao reconhece.</div>
+          </div>
+          <q-btn flat round dense icon="close" aria-label="Fechar sessões" v-close-popup />
+        </q-card-section>
+        <q-separator />
+        <q-list v-if="sessions.length" separator>
+          <q-item v-for="session in sessions" :key="session.id">
+            <q-item-section>
+              <q-item-label>
+                {{ session.name }}
+                <q-badge v-if="session.current" color="primary" class="q-ml-sm">Atual</q-badge>
+              </q-item-label>
+              <q-item-label caption>
+                Ultimo uso: {{ formatDateTime(session.last_used_at || session.created_at) }}
+              </q-item-label>
+              <q-item-label caption>
+                Expira: {{ formatDateTime(session.expires_at) }}
+              </q-item-label>
+            </q-item-section>
+            <q-item-section side>
+              <q-btn
+                flat
+                round
+                color="negative"
+                icon="delete"
+                :loading="revokingSessionId === session.id"
+                aria-label="Revogar sessao"
+                @click="revokeSession(session)"
+              />
+            </q-item-section>
+          </q-item>
+        </q-list>
+        <q-card-section v-else-if="!sessionsLoading">
+          <q-banner class="bg-grey-2 text-grey-8">Nenhuma sessao ativa encontrada.</q-banner>
+        </q-card-section>
+        <q-inner-loading :showing="sessionsLoading" />
+        <q-separator />
+        <q-card-actions align="right">
+          <q-btn flat label="Fechar" v-close-popup />
+          <q-btn color="negative" label="Encerrar todas" :loading="sessionsLoading" @click="logoutAll" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-layout>
 </template>
 
@@ -151,6 +206,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
+import { formatDateTime } from '@/composables/useDateFormat'
 import { apiFetch } from '@/services/api'
 import { useAuthStore } from '@/stores/auth-store'
 
@@ -161,9 +217,13 @@ const leftDrawerOpen = ref(false)
 const searchTerm = ref('')
 const showSearch = ref(false)
 const showNotifications = ref(false)
+const showSessions = ref(false)
 const rawSearchResults = ref({})
 const notifications = ref([])
 const notificationsLoading = ref(false)
+const sessions = ref([])
+const sessionsLoading = ref(false)
+const revokingSessionId = ref(null)
 
 const navigation = ref([
   { label: 'Dashboard', caption: 'Indicadores e alertas', icon: 'dashboard', to: '/', permission: 'dashboard.visualizar', active: true },
@@ -227,6 +287,57 @@ async function runSearch() {
 async function openNotifications() {
   showNotifications.value = true
   await loadNotifications()
+}
+
+async function openSessions() {
+  showSessions.value = true
+  sessionsLoading.value = true
+
+  try {
+    const payload = await apiFetch('/auth/devices')
+    sessions.value = payload.data || []
+  } catch (error) {
+    $q.notify({ type: 'negative', message: error.message })
+  } finally {
+    sessionsLoading.value = false
+  }
+}
+
+async function revokeSession(session) {
+  revokingSessionId.value = session.id
+
+  try {
+    const result = await apiFetch(`/auth/devices/${session.id}`, { method: 'DELETE' })
+
+    if (result.current) {
+      auth.clearSession()
+      showSessions.value = false
+      await router.push('/login')
+      return
+    }
+
+    sessions.value = sessions.value.filter(item => item.id !== session.id)
+    $q.notify({ type: 'positive', message: 'Sessao revogada.' })
+  } catch (error) {
+    $q.notify({ type: 'negative', message: error.message })
+  } finally {
+    revokingSessionId.value = null
+  }
+}
+
+async function logoutAll() {
+  sessionsLoading.value = true
+
+  try {
+    await apiFetch('/auth/logout-all', { method: 'POST' })
+    auth.clearSession()
+    showSessions.value = false
+    await router.push('/login')
+  } catch (error) {
+    $q.notify({ type: 'negative', message: error.message })
+  } finally {
+    sessionsLoading.value = false
+  }
 }
 
 async function loadNotifications() {

@@ -125,7 +125,7 @@ class ItKnowledgeArticleController extends Controller
             'category_id' => ['nullable', 'integer', 'exists:it_ticket_categories,id'],
             'title' => [$required, 'string', 'max:255'],
             'summary' => ['nullable', 'string', 'max:500'],
-            'content' => [$required, 'string'],
+            'content' => [$required, 'string', 'max:50000'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['string', 'max:60'],
             'tag' => ['nullable', 'string', 'max:60'],

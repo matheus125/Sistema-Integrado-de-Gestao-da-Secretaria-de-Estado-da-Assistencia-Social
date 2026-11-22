@@ -3,6 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Services\It\WhatsappVerifyToken;
+use App\Services\Settings\SettingValue;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -34,6 +36,9 @@ class CheckProductionReadiness extends Command
             $checks['Dedicated database user'] = ! in_array(DB::connection()->getConfig('username'), ['root', 'dev'], true);
             $checks['No seeded default passwords'] = ! User::query()->whereIn('email', ['admin@siges.local', 'tecnico@siges.local'])->get()
                 ->contains(fn (User $user) => Hash::check('password', $user->password));
+            $checks['Strong WhatsApp webhook verify token'] = WhatsappVerifyToken::isSecure(
+                SettingValue::get('whatsapp_business_verify_token'),
+            );
         } catch (\Throwable) {
             $checks['Database reachable'] = false;
         }

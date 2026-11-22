@@ -10,6 +10,6 @@ class SettingValue
     {
         $setting = SystemSetting::query()->where('key', $key)->first();
 
-        return $setting?->value['value'] ?? $default;
+        return $setting?->resolvedValue($default) ?? $default;
     }
 }

@@ -3,12 +3,20 @@
 namespace Database\Seeders;
 
 use App\Models\SystemSetting;
+use App\Services\It\WhatsappVerifyToken;
 use Illuminate\Database\Seeder;
+use RuntimeException;
 
 class SystemSettingSeeder extends Seeder
 {
     public function run(): void
     {
+        $verifyToken = config('services.whatsapp.verify_token');
+
+        if (filled($verifyToken) && ! WhatsappVerifyToken::isSecure($verifyToken)) {
+            throw new RuntimeException('WHATSAPP_BUSINESS_VERIFY_TOKEN must be a strong, non-default value.');
+        }
+
         collect([
             ['group' => 'institucional', 'key' => 'institution_name', 'label' => 'Nome da instituicao', 'type' => 'text', 'value' => 'Secretaria de Estado da Assistencia Social'],
             ['group' => 'institucional', 'key' => 'system_name', 'label' => 'Nome do sistema', 'type' => 'text', 'value' => 'SIGES'],
@@ -33,7 +41,7 @@ class SystemSettingSeeder extends Seeder
             ['group' => 'whatsapp', 'key' => 'whatsapp_business_phone', 'label' => 'Numero WhatsApp corporativo', 'type' => 'text', 'value' => ''],
             ['group' => 'whatsapp', 'key' => 'whatsapp_business_webhook_url', 'label' => 'URL publica do webhook WhatsApp', 'type' => 'text', 'value' => ''],
             ['group' => 'whatsapp', 'key' => 'whatsapp_business_phone_number_id', 'label' => 'Phone Number ID WhatsApp', 'type' => 'text', 'value' => ''],
-            ['group' => 'whatsapp', 'key' => 'whatsapp_business_verify_token', 'label' => 'Verify Token do webhook', 'type' => 'password', 'value' => 'siges-webhook-token', 'is_secret' => true],
+            ['group' => 'whatsapp', 'key' => 'whatsapp_business_verify_token', 'label' => 'Verify Token do webhook', 'type' => 'password', 'value' => is_string($verifyToken) ? $verifyToken : '', 'is_secret' => true],
             ['group' => 'whatsapp', 'key' => 'whatsapp_business_token', 'label' => 'Token WhatsApp Business', 'type' => 'password', 'value' => '', 'is_secret' => true],
             ['group' => 'whatsapp', 'key' => 'whatsapp_business_api_version', 'label' => 'Versao da API WhatsApp', 'type' => 'text', 'value' => 'v20.0'],
             ['group' => 'automacoes', 'key' => 'it_automation_enabled', 'label' => 'Motor de automacoes habilitado', 'type' => 'boolean', 'value' => true],
@@ -52,15 +60,19 @@ class SystemSettingSeeder extends Seeder
             $model = SystemSetting::query()->firstOrNew(['key' => $setting['key']]);
 
             $model->fill([
-                    'group' => $setting['group'],
-                    'label' => $setting['label'],
-                    'type' => $setting['type'],
-                    'is_secret' => $setting['is_secret'] ?? false,
-                    'description' => $setting['description'] ?? null,
+                'group' => $setting['group'],
+                'label' => $setting['label'],
+                'type' => $setting['type'],
+                'is_secret' => $setting['is_secret'] ?? false,
+                'description' => $setting['description'] ?? null,
             ]);
 
             if (! $model->exists) {
-                $model->value = ['value' => $setting['value']];
+                if ($model->is_secret) {
+                    $model->setSecretValue($setting['value']);
+                } else {
+                    $model->value = ['value' => $setting['value']];
+                }
             }
 
             $model->save();

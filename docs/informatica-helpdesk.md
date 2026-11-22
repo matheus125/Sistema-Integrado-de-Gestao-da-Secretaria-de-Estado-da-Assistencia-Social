@@ -56,7 +56,7 @@ Execute `php artisan test --do-not-cache-result` antes de publicar. O build do f
 
 ## Deploy
 
-Em desenvolvimento, o projeto usa SQLite. Em produção, configure MySQL em `.env`, execute `php artisan migrate --force`, publique o frontend gerado em `frontend/quasar/dist/spa`, mantenha `storage` gravável e configure `php artisan queue:work` e `php artisan schedule:work` como serviços supervisionados. O endpoint do WhatsApp deve usar HTTPS, token secreto e URL pública configurada em **Configurações > Integrações**.
+Em desenvolvimento, o projeto usa SQLite. Em produção, configure MySQL em `.env`, execute `php artisan migrate --force`, publique o frontend gerado em `frontend/quasar/dist/spa`, mantenha `storage` gravável e configure `php artisan queue:work` e `php artisan schedule:work` como serviços supervisionados. O endpoint do WhatsApp deve usar HTTPS, App Secret e Verify Token exclusivo com no mínimo 32 caracteres. Gere o token no ambiente, salve-o em **Configurações > Integrações** e use o mesmo valor no cadastro do webhook na Meta; a integração não pode ser habilitada com valor ausente, fraco ou padrão.
 
 ### SMTP e worker de notificações
 

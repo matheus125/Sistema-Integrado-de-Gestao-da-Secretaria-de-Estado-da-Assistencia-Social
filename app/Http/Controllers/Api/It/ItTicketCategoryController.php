@@ -96,7 +96,7 @@ class ItTicketCategoryController extends Controller
             'parent_id' => ['nullable', 'integer', 'exists:it_ticket_categories,id'],
             'name' => ['required', 'string', 'max:160'],
             'slug' => ['nullable', 'string', 'max:180', Rule::unique('it_ticket_categories', 'slug')->ignore($category)],
-            'description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:2000'],
             'active' => ['boolean'],
             'color' => ['nullable', 'string', 'max:40'],
             'icon' => ['nullable', 'string', 'max:80'],

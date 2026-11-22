@@ -114,4 +114,10 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    'login_throttle' => [
+        'max_attempts' => env('LOGIN_RATE_LIMIT_ATTEMPTS', 5),
+        'max_attempts_per_ip' => env('LOGIN_RATE_LIMIT_IP_ATTEMPTS', 20),
+        'decay_seconds' => env('LOGIN_RATE_LIMIT_DECAY_SECONDS', 60),
+    ],
+
 ];

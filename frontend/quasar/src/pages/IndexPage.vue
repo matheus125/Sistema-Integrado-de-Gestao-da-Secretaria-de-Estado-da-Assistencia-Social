@@ -34,7 +34,7 @@
           <div class="panel-title">Indicadores em tempo real</div>
           <div class="text-caption text-grey-7">Dados carregados da API protegida por Sanctum</div>
         </div>
-        <q-btn flat round icon="refresh" :loading="loading" @click="loadDashboard">
+        <q-btn flat round icon="refresh" aria-label="Atualizar dashboard" :loading="loading" @click="loadDashboard">
           <q-tooltip>Atualizar dashboard</q-tooltip>
         </q-btn>
       </div>
@@ -85,7 +85,7 @@
               <div class="panel-title">Solicitacoes em andamento</div>
               <div class="text-caption text-grey-7">Transporte, materiais e informatica</div>
             </div>
-            <q-btn flat round icon="filter_alt" @click="filterOpen = !filterOpen">
+            <q-btn flat round icon="filter_alt" aria-label="Filtrar solicitações" @click="filterOpen = !filterOpen">
               <q-tooltip>Filtrar</q-tooltip>
             </q-btn>
           </q-card-section>
@@ -120,7 +120,7 @@
               <div class="panel-title">Alertas</div>
               <div class="text-caption text-grey-7">Itens que exigem acompanhamento</div>
             </div>
-            <q-btn flat round icon="refresh" :loading="alertsLoading" @click="loadAlerts">
+            <q-btn flat round icon="refresh" aria-label="Atualizar alertas" :loading="alertsLoading" @click="loadAlerts">
               <q-tooltip>Atualizar alertas</q-tooltip>
             </q-btn>
           </q-card-section>

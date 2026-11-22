@@ -73,6 +73,33 @@ class TransportOperationsTest extends TestCase
         $this->assertSame($department->id, $user->department_id);
     }
 
+    public function test_maintenance_cost_persists_exact_decimal_and_rejects_excess_precision_or_range(): void
+    {
+        [$user, , $vehicle] = $this->transportContext();
+        Sanctum::actingAs($user);
+
+        $maintenanceId = $this->postJson('/api/transport/maintenances', [
+            'vehicle_id' => $vehicle->id,
+            'type' => 'revisao',
+            'description' => 'Teste de custo decimal.',
+            'cost' => '240.50',
+        ])->assertCreated()
+            ->assertJsonPath('cost', '240.50')
+            ->json('id');
+
+        $this->assertSame('240.50', VehicleMaintenance::query()->findOrFail($maintenanceId)->cost);
+
+        foreach (['0.001', '1000000000.00'] as $cost) {
+            $this->postJson('/api/transport/maintenances', [
+                'vehicle_id' => $vehicle->id,
+                'type' => 'revisao',
+                'description' => 'Custo inválido.',
+                'cost' => $cost,
+            ])->assertUnprocessable()
+                ->assertJsonValidationErrors('cost');
+        }
+    }
+
     public function test_transport_request_filters_and_agenda_return_scoped_operational_data(): void
     {
         [$user, $department, $vehicle] = $this->transportContext();

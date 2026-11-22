@@ -50,7 +50,13 @@ return [
     |
     */
 
-    'expiration' => null,
+    'expiration' => max(15, (int) env('SANCTUM_TOKEN_EXPIRATION_MINUTES', 480)),
+
+    'idle_timeout' => max(5, (int) env('SANCTUM_TOKEN_IDLE_TIMEOUT_MINUTES', 120)),
+
+    'max_tokens_per_user' => max(1, (int) env('SANCTUM_MAX_TOKENS_PER_USER', 5)),
+
+    'prune_expired_hours' => max(0, (int) env('SANCTUM_PRUNE_EXPIRED_HOURS', 24)),
 
     /*
     |--------------------------------------------------------------------------

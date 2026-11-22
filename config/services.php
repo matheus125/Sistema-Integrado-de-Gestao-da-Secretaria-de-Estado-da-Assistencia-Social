@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'whatsapp' => [
+        'app_secret' => env('WHATSAPP_BUSINESS_APP_SECRET'),
+        'verify_token' => env('WHATSAPP_BUSINESS_VERIFY_TOKEN'),
+    ],
+
 ];
