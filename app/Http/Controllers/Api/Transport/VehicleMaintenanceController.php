@@ -12,6 +12,7 @@ use Illuminate\Validation\Rule;
 class VehicleMaintenanceController extends Controller
 {
     private const TYPES = ['revisao', 'oleo', 'pneus', 'licenciamento', 'corretiva', 'outros'];
+
     private const STATUSES = ['agendada', 'em_execucao', 'concluida', 'cancelada'];
 
     public function index(Request $request): JsonResponse
@@ -22,7 +23,7 @@ class VehicleMaintenanceController extends Controller
             'type' => ['nullable', Rule::in(self::TYPES)],
             'status' => ['nullable', Rule::in(self::STATUSES)],
             'due' => ['nullable', Rule::in(['overdue', 'soon'])],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:'.config('pagination.max_per_page', 100)],
         ]);
 
         $maintenances = VehicleMaintenance::query()
@@ -150,6 +151,7 @@ class VehicleMaintenanceController extends Controller
             $query->where(fn ($query) => $query
                 ->whereDate('next_due_at', '<', today())
                 ->orWhereHas('vehicle', fn ($query) => $query->whereColumn('vehicles.current_km', '>=', 'vehicle_maintenances.next_due_km')));
+
             return;
         }
 
@@ -164,6 +166,7 @@ class VehicleMaintenanceController extends Controller
     {
         if ($maintenance->status === 'em_execucao') {
             $maintenance->vehicle()->update(['status' => 'manutencao']);
+
             return;
         }
 

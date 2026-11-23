@@ -38,7 +38,7 @@ class VehicleRequestController extends Controller
             'driver_id' => ['nullable', 'integer', 'exists:drivers,id'],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date'],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:'.config('pagination.max_per_page', 100)],
         ]);
 
         $requests = VehicleRequest::query()

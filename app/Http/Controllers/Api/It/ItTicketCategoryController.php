@@ -20,7 +20,7 @@ class ItTicketCategoryController extends Controller
             'search' => ['nullable', 'string', 'max:120'],
             'active' => ['nullable', Rule::in(['0', '1'])],
             'parent_id' => ['nullable', 'integer', 'exists:it_ticket_categories,id'],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:'.config('pagination.max_per_page', 100)],
         ]);
 
         $categories = ItTicketCategory::query()

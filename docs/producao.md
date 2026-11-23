@@ -14,7 +14,7 @@ ser definidos. Não copiar o `.env` local como configuração pronta de produç�
 - `deploy/nginx/siges.conf.example`: HTTPS, SPA e API no mesmo domínio.
 - `deploy/php/siges-pool.conf.example`: pool PHP-FPM, uploads até 50 MiB,
   limite de requisição de 60 segundos.
-- `deploy/systemd/siges-queue.service`: filas `notifications,default`.
+- `deploy/systemd/siges-queue.service`: filas `exports,notifications,default`.
 - `deploy/systemd/siges-scheduler.service` e `.timer`: scheduler a cada minuto.
 - `deploy/systemd/siges-backup.service` e `.timer`: backup diário às 03:00,
   no fuso do servidor, com janela de manutenção.
@@ -31,6 +31,12 @@ O frontend compilado usa `/api` por padrão; desenvolvimento mantém a porta 800
 O login não apresenta nem preenche credenciais de demonstração.
 O tempo de reserva dos jobs passou para 180 segundos, acima do timeout de 120
 segundos dos workers, conforme a documentação de filas do Laravel.
+Exportações são geradas pela fila `exports`, armazenadas no disco privado e
+expiram por padrão após 60 minutos. O scheduler remove arquivos expirados a
+cada hora. Os limites padrão são 10.000 linhas para CSV, 5.000 para XLSX e 500
+para PDF; ajuste-os somente após teste de capacidade em homologação.
+Listagens autenticadas rejeitam `per_page` fora do intervalo de 1 até
+`PAGINATION_MAX_PER_PAGE`, cujo padrão é 100.
 
 ## Publicação no servidor definido
 

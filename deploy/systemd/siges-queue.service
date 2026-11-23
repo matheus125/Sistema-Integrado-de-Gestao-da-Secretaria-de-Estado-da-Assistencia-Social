@@ -1,12 +1,12 @@
 [Unit]
-Description=SIGES default and notification queues
+Description=SIGES export, notification and default queues
 After=network.target
 
 [Service]
 User=www-data
 Group=www-data
 WorkingDirectory=/var/www/siges
-ExecStart=/usr/bin/php artisan queue:work database --queue=notifications,default --sleep=3 --tries=3 --timeout=120 --backoff=60 --max-time=3600
+ExecStart=/usr/bin/php artisan queue:work database --queue=exports,notifications,default --sleep=3 --tries=3 --timeout=120 --backoff=60 --max-time=3600
 Restart=always
 RestartSec=5
 TimeoutStopSec=360

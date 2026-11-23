@@ -48,7 +48,10 @@ Foram exercitadas as nove rotas autenticadas em 375, 768 e 1366 px. Em navegaç�
 - cabeçalhos dentro da viewport;
 - nenhum overflow horizontal global detectado.
 
-Não houve inspeção exaustiva de cada modal e tabela com dados volumosos; esse ponto permanece parcial.
+A auditoria original não inspecionou cada modal. Em 23/11/2026, a FIX-020
+passou a abrir os 27 modais em 375, 768 e 1440 px: as 81 combinações foram
+aprovadas sem corte ou overflow e com foco preso/restaurado. Tabelas com dados
+volumosos continuam fora dessa matriz específica.
 
 ## Integração frontend/API
 
@@ -63,13 +66,21 @@ Confirmado:
 - exportações tratam Blob e nome de arquivo;
 - rotas ocultam módulos por permissão, enquanto o backend também aplica middleware/checagens.
 
-Lacunas:
+Lacunas identificadas na auditoria original:
 
-- não há testes JS unitários, de componentes ou E2E declarados no `package.json`;
+- não havia testes JS unitários, de componentes ou E2E declarados no
+  `package.json`; as correções incrementais adicionaram testes Node e a FIX-026
+  incorporou Vitest/component tests. Playwright permanente continua na FIX-027;
 - não foi exercitado pelo navegador cada CRUD, filtro, paginação e exclusão;
-- o arquivo `ItHelpDeskPage.vue` concentra 2.220 linhas e nove formulários;
+- após a FIX-025, `ItHelpDeskPage.vue` ainda concentra 2.245 linhas e nove
+  formulários, embora o quadro Kanban tenha sido extraído;
 - falhas gerais ainda usam `Notify` e não há política central de retry/offline;
   respostas 422, porém, possuem associação por campo desde a FIX-019.
+
+Atualização de 23/11/2026: o roteiro funcional de modais adicionou cobertura
+Chrome headless para limites, rolagem, foco inicial, ciclo de `Tab` e refoco em
+27 diálogos. A instalação permanente do Playwright no projeto/CI permanece na
+FIX-027.
 
 Atualização de 22/11/2026: a FIX-019 adicionou estado reativo central para
 `payload.errors` e vinculou 187 controles submetidos nos 24 `QForm`, além dos
@@ -83,14 +94,44 @@ Uma varredura DOM encontrou controles icon-only sem `aria-label`/nome textual ac
 
 Pontos positivos: `h1` por tela, labels visíveis nos campos, `role="alert"` em erro de calendário e atributos ARIA no Kanban.
 
-Não foram executados axe-core, leitor de tela nem teste completo de contraste. Acessibilidade permanece **PARCIAL/COM ERRO**.
+Na auditoria original não foram executados axe-core, leitor de tela nem teste
+completo de contraste. A FIX-021 executou posteriormente 19 varreduras axe nas
+dez telas/rotas e verificou 171 paradas de teclado, sem violações ou falhas na
+matriz final. A avaliação humana com leitor de tela permanece recomendada.
 
 Atualização de 22/11/2026: a FIX-018 inventariou os componentes `QBtn` no
 código-fonte e corrigiu os 96 controles com ícone ou formato redondo que não
 possuíam nome explícito. Os 166 controles dessa categoria agora têm
 `aria-label`, `label` ou `title`, verificados por teste Node permanente. A
 auditoria do DOM renderizado com axe, contraste, teclado e leitor de tela
-permanece reservada à FIX-021.
+foi executada pela FIX-021, exceto a avaliação humana com leitor de tela.
+
+Atualização de 23/11/2026: viewport, semântica da navegação, contraste, rótulos
+dinâmicos e indicador de foco foram corrigidos. O roteiro Chrome/axe terminou
+com zero violações críticas, sérias, moderadas ou menores detectadas pelas tags
+WCAG 2/2.1 A/AA adotadas.
+
+Atualização de 23/11/2026: a FIX-022 adicionou paginação própria ao Kanban, com
+25 cartões por página por padrão e teto de 100. O teste de volume criou 180
+chamados, solicitou a terceira página e confirmou que somente 25 registros
+foram entregues e mantidos no estado da tela. A suíte frontend acumulada passou
+a 34 testes Node aprovados.
+
+Atualização de 23/11/2026: a FIX-023 substituiu downloads síncronos por
+solicitação assíncrona, acompanhamento de estado e download do arquivo privado
+concluído. Três testes Node adicionais verificam fila, polling, propriedade,
+timeout e falha segura, elevando a suíte frontend acumulada para 37 testes.
+
+Atualização de 23/11/2026: a FIX-025 extraiu colunas, cartões e drag-and-drop
+para `ItKanbanBoard.vue`, mantendo filtros, paginação e operações HTTP na
+página. Três testes estruturais protegem as novas fronteiras do frontend e do
+backend, elevando a suíte frontend acumulada para 40 testes.
+
+Atualização de 23/11/2026: a FIX-026 adicionou Vitest 5 com JSDOM e 13 testes
+em quatro arquivos. A nova suíte monta os componentes compartilhados de
+telefone, placa, moeda e login; também isola a store de autenticação e os fluxos
+de JSON, 422, 401, upload e download do serviço API. `npm test` executa os 40
+testes Node e os 13 testes Vitest. O audit npm permaneceu sem vulnerabilidades.
 
 ## Bugs funcionais e UX reproduzidos
 

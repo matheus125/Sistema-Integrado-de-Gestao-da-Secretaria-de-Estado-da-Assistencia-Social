@@ -66,7 +66,8 @@ class ItTicketController extends Controller
             'sla' => ['nullable', Rule::in(['overdue', 'due_today'])],
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date'],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:'.config('pagination.max_per_page', 100)],
             'mine' => ['nullable', 'boolean'],
             'kanban' => ['nullable', 'boolean'],
         ]);
@@ -103,11 +104,27 @@ class ItTicketController extends Controller
             ->latest();
 
         if ($request->boolean('kanban')) {
-            $collection = $tickets->get()->map(fn (ItTicket $ticket) => $this->withAvailableTransitions($ticket));
+            $paginator = $tickets->paginate($filters['per_page'] ?? 25);
+            $paginator->appends($request->query());
+            $paginator->getCollection()->transform(fn (ItTicket $ticket) => $this->withAvailableTransitions($ticket));
 
             return response()->json([
-                'data' => $collection->values(),
-                'meta' => ['total' => $collection->count(), 'view' => 'kanban'],
+                'data' => $paginator->getCollection()->values(),
+                'meta' => [
+                    'view' => 'kanban',
+                    'current_page' => $paginator->currentPage(),
+                    'last_page' => $paginator->lastPage(),
+                    'per_page' => $paginator->perPage(),
+                    'total' => $paginator->total(),
+                    'from' => $paginator->firstItem(),
+                    'to' => $paginator->lastItem(),
+                ],
+                'links' => [
+                    'first' => $paginator->url(1),
+                    'last' => $paginator->url($paginator->lastPage()),
+                    'prev' => $paginator->previousPageUrl(),
+                    'next' => $paginator->nextPageUrl(),
+                ],
             ]);
         }
 

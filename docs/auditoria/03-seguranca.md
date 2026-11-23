@@ -22,6 +22,11 @@ Referências: OWASP Top 10, OWASP API Security Top 10, práticas Laravel/Sanctum
 | SEC-007 | Headers de segurança incompletos | Baixa | Nginx define nosniff e Referrer-Policy, mas não CSP, frame-ancestors/X-Frame-Options nem HSTS | clickjacking e menor defesa em profundidade |
 | SEC-008 | Exportações PDF/planilhas sem limite explícito | Média | relatórios fazem `get()` e Dompdf/PhpSpreadsheet possuem avisos de DoS | usuário autorizado pode gerar consumo elevado com grande volume |
 
+Atualização de 23/11/2026: a FIX-023 corrigiu SEC-008. As exportações passaram
+para job com timeout, limites por formato e armazenamento privado temporário.
+Status e download exigem o mesmo usuário autenticado que fez a solicitação;
+arquivos expirados são rejeitados e removidos pelo scheduler.
+
 ## Autenticação
 
 - login, logout e `/auth/me` funcionaram;

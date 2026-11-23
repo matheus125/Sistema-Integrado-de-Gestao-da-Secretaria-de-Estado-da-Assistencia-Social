@@ -41,6 +41,7 @@ use App\Http\Controllers\Api\Transport\VehicleController;
 use App\Http\Controllers\Api\Transport\VehicleMaintenanceController;
 use App\Http\Controllers\Api\Transport\VehicleRequestController;
 use App\Http\Controllers\Api\Webhooks\WhatsappWebhookController;
+use App\Http\Middleware\EnforcePaginationLimit;
 use App\Http\Middleware\VerifyWhatsappWebhookSignature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -50,7 +51,7 @@ Route::get('/webhooks/whatsapp', [WhatsappWebhookController::class, 'verify']);
 Route::post('/webhooks/whatsapp', [WhatsappWebhookController::class, 'receive'])
     ->middleware(VerifyWhatsappWebhookSignature::class);
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', EnforcePaginationLimit::class])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::post('/auth/logout-all', [AuthController::class, 'logoutAll']);
@@ -168,6 +169,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/options', [ReportController::class, 'options']);
         Route::get('/preview', [ReportController::class, 'preview']);
         Route::get('/export', [ReportController::class, 'export']);
+        Route::post('/exports', [ReportController::class, 'storeExport']);
+        Route::get('/exports/{reportExport}', [ReportController::class, 'showExport']);
+        Route::get('/exports/{reportExport}/download', [ReportController::class, 'downloadExport']);
     });
 
     Route::prefix('settings')->middleware('permission:configuracoes.visualizar')->group(function () {

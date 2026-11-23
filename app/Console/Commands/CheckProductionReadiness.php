@@ -25,7 +25,7 @@ class CheckProductionReadiness extends Command
             'MySQL default connection' => config('database.default') === 'mysql',
             'Secure session cookie' => (bool) config('session.secure'),
             'Database queues' => config('queue.default') === 'database',
-            'Job reservation exceeds worker timeout' => config('queue.connections.database.retry_after') > max(120, (int) config('notifications.timeout')),
+            'Job reservation exceeds worker timeout' => config('queue.connections.database.retry_after') > max(120, (int) config('notifications.timeout'), (int) config('reports.exports.timeout')),
             'Frontend production build exists' => is_file(base_path('frontend/quasar/dist/spa/index.html')),
             'Storage writable' => is_writable(storage_path()) && is_writable(base_path('bootstrap/cache')),
             'Production mail transport' => ! in_array(config('mail.default'), ['log', 'array'], true),

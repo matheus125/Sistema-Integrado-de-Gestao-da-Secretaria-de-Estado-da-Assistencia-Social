@@ -70,7 +70,7 @@
         <div class="text-h6 text-weight-bold">Gestao SEAS</div>
       </div>
 
-      <q-list padding>
+      <q-list padding role="navigation" aria-label="Módulos do SIGES">
         <q-item
           v-for="item in visibleNavigation"
           :key="item.label"

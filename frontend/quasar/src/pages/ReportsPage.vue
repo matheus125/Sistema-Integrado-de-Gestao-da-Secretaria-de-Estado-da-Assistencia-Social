@@ -32,10 +32,13 @@
             @update:model-value="loadPreview"
           />
           <div class="row q-gutter-sm items-center">
-            <q-btn v-if="canExport" color="primary" icon="table_view" label="CSV" unelevated @click="download('csv')" />
-            <q-btn v-if="canExport" color="positive" icon="grid_on" label="Excel" unelevated @click="download('xlsx')" />
-            <q-btn v-if="canPdf" color="negative" icon="picture_as_pdf" label="PDF" unelevated @click="download('pdf')" />
+            <q-btn v-if="canExport" color="primary" icon="table_view" label="CSV" unelevated :loading="exportingFormat === 'csv'" :disable="Boolean(exportingFormat)" @click="download('csv')" />
+            <q-btn v-if="canExport" color="positive" icon="grid_on" label="Excel" unelevated :loading="exportingFormat === 'xlsx'" :disable="Boolean(exportingFormat)" @click="download('xlsx')" />
+            <q-btn v-if="canPdf" color="negative" icon="picture_as_pdf" label="PDF" unelevated :loading="exportingFormat === 'pdf'" :disable="Boolean(exportingFormat)" @click="download('pdf')" />
           </div>
+          <q-banner v-if="exportStatus" dense rounded class="bg-blue-1 text-primary" aria-live="polite">
+            {{ exportStatus }}
+          </q-banner>
         </q-card-section>
       </q-card>
 
@@ -69,6 +72,8 @@ import { useAuthStore } from '@/stores/auth-store'
 const $q = useQuasar()
 const auth = useAuthStore()
 const loading = ref(false)
+const exportingFormat = ref('')
+const exportStatus = ref('')
 const options = ref({ reports: [] })
 const preview = ref({ title: '', headings: [], rows: [], total: 0 })
 const filters = reactive({
@@ -128,14 +133,46 @@ async function loadPreview() {
 }
 
 async function download(format) {
+  exportingFormat.value = format
+  exportStatus.value = 'Exportação adicionada à fila. Aguarde o processamento seguro.'
+
   try {
     clearServerValidationErrors()
     const query = params()
     query.set('format', format)
-    await apiDownload(`/reports/export?${query.toString()}`, `${filters.report}.${format}`)
+    const exportRequest = await apiFetch('/reports/exports', {
+      method: 'POST',
+      body: JSON.stringify(Object.fromEntries(query.entries()))
+    })
+    const completedExport = await waitForExport(exportRequest.id)
+    exportStatus.value = `Exportação concluída com ${completedExport.row_count || 0} registro(s).`
+    await apiDownload(completedExport.download_url, `${filters.report}.${format}`)
   } catch (error) {
+    exportStatus.value = ''
     $q.notify({ type: 'negative', message: error.message })
+  } finally {
+    exportingFormat.value = ''
   }
+}
+
+async function waitForExport(exportId) {
+  const maxAttempts = 90
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const current = await apiFetch(`/reports/exports/${exportId}`)
+
+    if (current.status === 'completed') return current
+    if (current.status === 'failed' || current.status === 'expired') {
+      throw new Error(current.error || 'A exportação não pôde ser concluída. Refine os filtros e tente novamente.')
+    }
+
+    exportStatus.value = current.status === 'processing'
+      ? 'Gerando o arquivo em segundo plano…'
+      : 'Exportação aguardando processamento…'
+    await new Promise(resolve => window.setTimeout(resolve, 1500))
+  }
+
+  throw new Error('A exportação excedeu o tempo de espera. Consulte novamente após o processamento da fila.')
 }
 
 function printReport() {

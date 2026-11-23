@@ -121,7 +121,7 @@
         </template>
         <template #no-data>
           <div class="empty-state">
-            <q-icon name="inbox" size="42px" color="grey-5" />
+            <q-icon name="inbox" size="42px" color="grey-7" />
             <div class="text-subtitle2">Nenhum chamado encontrado</div>
             <div class="text-caption text-grey-7">Ajuste os filtros ou abra um novo chamado.</div>
             <q-btn v-if="hasActiveFilters" flat color="primary" label="Limpar filtros" icon="filter_alt_off" @click="clearFilters" />
@@ -208,68 +208,53 @@
 
         <q-tab-panel v-if="!requesterOnly" name="kanban">
           <div class="it-filters q-mb-md">
-            <q-input v-model="filters.search" dense outlined debounce="400" placeholder="Buscar" @update:model-value="loadAll">
+            <q-input v-model="filters.search" dense outlined debounce="400" placeholder="Buscar" @update:model-value="applyKanbanFilters">
               <template #prepend><q-icon name="search" /></template>
             </q-input>
-            <q-select v-model="filters.status" dense outlined clearable label="Status" :options="statusOptions" emit-value map-options @update:model-value="loadAll" />
-            <q-select v-model="filters.type" dense outlined clearable label="Tipo" :options="typeOptions" emit-value map-options @update:model-value="loadAll" />
-            <q-select v-model="filters.priority" dense outlined clearable label="Prioridade" :options="priorityOptions" emit-value map-options @update:model-value="loadAll" />
-            <q-select v-model="filters.category_id" dense outlined clearable label="Categoria" :options="categoryOptions" emit-value map-options @update:model-value="loadAll" />
-            <q-select v-model="filters.department_id" dense outlined clearable label="Setor" :options="departmentOptions" emit-value map-options @update:model-value="loadAll" />
-            <q-select v-model="filters.assigned_to" dense outlined clearable label="Tecnico" :options="technicianOptions" emit-value map-options @update:model-value="loadAll" />
-            <q-select v-model="filters.sla" dense outlined clearable label="SLA" :options="slaOptions" emit-value map-options @update:model-value="loadAll" />
-            <q-select v-model="filters.source" dense outlined clearable label="Origem" :options="sourceOptions" emit-value map-options @update:model-value="loadAll" />
+            <q-select v-model="filters.status" dense outlined clearable label="Status" :options="statusOptions" emit-value map-options @update:model-value="applyKanbanFilters" />
+            <q-select v-model="filters.type" dense outlined clearable label="Tipo" :options="typeOptions" emit-value map-options @update:model-value="applyKanbanFilters" />
+            <q-select v-model="filters.priority" dense outlined clearable label="Prioridade" :options="priorityOptions" emit-value map-options @update:model-value="applyKanbanFilters" />
+            <q-select v-model="filters.category_id" dense outlined clearable label="Categoria" :options="categoryOptions" emit-value map-options @update:model-value="applyKanbanFilters" />
+            <q-select v-model="filters.department_id" dense outlined clearable label="Setor" :options="departmentOptions" emit-value map-options @update:model-value="applyKanbanFilters" />
+            <q-select v-model="filters.assigned_to" dense outlined clearable label="Tecnico" :options="technicianOptions" emit-value map-options @update:model-value="applyKanbanFilters" />
+            <q-select v-model="filters.sla" dense outlined clearable label="SLA" :options="slaOptions" emit-value map-options @update:model-value="applyKanbanFilters" />
+            <q-select v-model="filters.source" dense outlined clearable label="Origem" :options="sourceOptions" emit-value map-options @update:model-value="applyKanbanFilters" />
             <q-btn flat round icon="filter_alt" aria-label="Limpar filtros do Kanban" @click="clearFilters">
               <q-tooltip>Limpar filtros</q-tooltip>
             </q-btn>
           </div>
-          <div class="kanban-board">
-            <section
-              v-for="column in kanbanColumns"
-              :key="column.value"
-              class="kanban-column"
-              :class="{ 'kanban-column--drop-target': canDropInto(column.value) }"
-              @dragover.prevent
-              @drop="dropTicket(column.value)"
-            >
-              <div class="kanban-column-header">
-                <q-icon :name="statusIcon(column.value)" :color="statusColor(column.value)" />
-                <strong>{{ column.label }}</strong>
-                <q-badge outline>{{ column.rows.length }}</q-badge>
-              </div>
-              <q-card
-                v-for="ticket in column.rows"
-                :key="ticket.id"
-                flat
-                bordered
-                :draggable="canEdit"
-                class="kanban-card"
-                :aria-label="`Chamado #${ticket.id}, ${statusLabel(ticket.status)}. Arraste para mudar o status.`"
-                :aria-grabbed="draggedTicket?.id === ticket.id ? 'true' : 'false'"
-                :aria-disabled="canEdit ? 'false' : 'true'"
-                @dragstart="dragTicket(ticket, $event)"
-                @dragend="draggedTicket = null"
-                @click="inspectTicket(ticket)"
-              >
-                <q-card-section>
-                  <div class="row items-center justify-between no-wrap">
-                    <strong>#{{ ticket.id }}</strong>
-                    <q-badge :color="slaColor(ticket.sla_due_at, ticket.status)" outline>{{ isOverdue(ticket) ? 'atrasado' : 'SLA' }}</q-badge>
-                  </div>
-                  <div class="kanban-title">{{ ticket.description }}</div>
-                  <div class="kanban-meta">{{ ticket.requester_name }} - {{ ticket.department?.name || ticket.department_name || '-' }}</div>
-                  <div class="row q-gutter-xs q-mt-sm">
-                    <q-badge :color="priorityColor(ticket.priority)" outline>{{ labelFor(ticket.priority) }}</q-badge>
-                    <q-badge :color="typeMeta(ticket.type).color" outline>{{ typeMeta(ticket.type).label }}</q-badge>
-                    <q-badge outline>{{ ticket.category_model?.name || ticket.category || 'sem categoria' }}</q-badge>
-                  </div>
-                  <div class="kanban-meta q-mt-sm">
-                    {{ ticket.assignee?.name || 'Sem tecnico' }} - aberto ha {{ openTime(ticket.created_at) }}
-                  </div>
-                </q-card-section>
-              </q-card>
-              <div v-if="!column.rows.length" class="kanban-empty">Nenhum chamado</div>
-            </section>
+          <it-kanban-board
+            :tickets="tickets"
+            :statuses="statusOptions"
+            :types="typeOptions"
+            :can-edit="canEdit"
+            :loading="loading"
+            @open-ticket="inspectTicket"
+            @move-ticket="moveKanbanTicket"
+          />
+          <div class="kanban-pagination" aria-label="Paginação do Kanban">
+            <div class="text-caption text-grey-7" aria-live="polite">
+              Exibindo {{ kanbanPagination.from || 0 }}–{{ kanbanPagination.to || 0 }} de {{ kanbanPagination.rowsNumber }} chamados
+            </div>
+            <q-select
+              :model-value="kanbanPagination.rowsPerPage"
+              dense
+              outlined
+              emit-value
+              map-options
+              label="Cartões por página"
+              :options="kanbanPageSizeOptions"
+              @update:model-value="changeKanbanPageSize"
+            />
+            <q-pagination
+              :model-value="kanbanPagination.page"
+              :max="kanbanPageCount"
+              :max-pages="7"
+              direction-links
+              boundary-links
+              aria-label="Navegar pelas páginas do Kanban"
+              @update:model-value="changeKanbanPage"
+            />
           </div>
         </q-tab-panel>
 
@@ -927,6 +912,7 @@
 
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
+import ItKanbanBoard from '@/components/ItKanbanBoard.vue'
 import ItSlaCalendars from '@/components/ItSlaCalendars.vue'
 import BrazilianPhoneInput from '@/components/BrazilianPhoneInput.vue'
 import { useRoute } from 'vue-router'
@@ -944,6 +930,7 @@ const tab = ref('tickets')
 const loading = ref(false)
 const tickets = ref([])
 const ticketPagination = ref({ page: 1, rowsPerPage: 15, rowsNumber: 0, sortBy: 'id', descending: true })
+const kanbanPagination = ref({ page: 1, rowsPerPage: 25, rowsNumber: 0, lastPage: 1, from: null, to: null })
 const categories = ref([])
 const knowledgeArticles = ref([])
 const supportTeams = ref([])
@@ -973,7 +960,6 @@ const attachmentFile = ref(null)
 const uploadingAttachment = ref(false)
 const detailLoading = ref(false)
 const filteredCategoryOptions = ref([])
-const draggedTicket = ref(null)
 const selectedTickets = ref([])
 const bulkActionForm = reactive({ action: 'assign', value: null })
 const dashboardLoading = ref(false)
@@ -1242,14 +1228,13 @@ const canSubmitStatus = computed(() => {
 
   return true
 })
-const kanbanColumns = computed(() => statusOptions.map(status => ({
-  ...status,
-  rows: tickets.value.filter(ticket => ticket.status === status.value)
-})))
-function canDropInto(status) {
-  return canEdit.value && draggedTicket.value && draggedTicket.value.status !== status
-    && (draggedTicket.value.available_transitions || []).includes(status)
-}
+const kanbanPageSizeOptions = [
+  { label: '15', value: 15 },
+  { label: '25', value: 25 },
+  { label: '50', value: 50 },
+  { label: '100', value: 100 }
+]
+const kanbanPageCount = computed(() => Math.max(1, kanbanPagination.value.lastPage || 1))
 const canEvaluateTicket = computed(() => {
   if (!selectedTicket.value) return false
   if (selectedTicket.value.evaluation) return false
@@ -1262,8 +1247,9 @@ async function loadAll() {
   loading.value = true
 
   try {
+    const activePagination = tab.value === 'kanban' ? kanbanPagination.value : ticketPagination.value
     const [ticketData, optionData, summaryData, categoryData, slaRuleData, slaCalendarData] = await Promise.all([
-      apiFetch(`/it/tickets${queryString({ ...filters, page: ticketPagination.value.page, per_page: ticketPagination.value.rowsPerPage, mine: requesterOnly.value ? 1 : '', kanban: tab.value === 'kanban' ? 1 : '' })}`),
+      apiFetch(`/it/tickets${queryString({ ...filters, page: activePagination.page, per_page: activePagination.rowsPerPage, mine: requesterOnly.value ? 1 : '', kanban: tab.value === 'kanban' ? 1 : '' })}`),
       apiFetch('/it/options'),
       apiFetch(`/it/tickets/summary${queryString({ mine: requesterOnly.value ? 1 : '' })}`),
       canViewCategories.value ? apiFetch(`/it/categories${queryString({ search: categorySearch.value })}`) : Promise.resolve({ data: [] }),
@@ -1272,7 +1258,17 @@ async function loadAll() {
     ])
 
     tickets.value = ticketData.data || []
-    if (ticketData.current_page) {
+    if (tab.value === 'kanban' && ticketData.meta) {
+      kanbanPagination.value = {
+        ...kanbanPagination.value,
+        page: ticketData.meta.current_page,
+        rowsPerPage: ticketData.meta.per_page,
+        rowsNumber: ticketData.meta.total,
+        lastPage: ticketData.meta.last_page,
+        from: ticketData.meta.from,
+        to: ticketData.meta.to
+      }
+    } else if (ticketData.current_page) {
       ticketPagination.value = { ...ticketPagination.value, page: ticketData.current_page, rowsPerPage: ticketData.per_page, rowsNumber: ticketData.total }
     }
     options.value = optionData
@@ -1292,6 +1288,45 @@ async function loadAll() {
 async function onTicketRequest({ pagination }) {
   ticketPagination.value = { ...ticketPagination.value, ...pagination }
   await loadAll()
+}
+
+async function loadTicketPage() {
+  loading.value = true
+  try {
+    const activePagination = tab.value === 'kanban' ? kanbanPagination.value : ticketPagination.value
+    const ticketData = await apiFetch(`/it/tickets${queryString({ ...filters, page: activePagination.page, per_page: activePagination.rowsPerPage, mine: requesterOnly.value ? 1 : '', kanban: tab.value === 'kanban' ? 1 : '' })}`)
+    tickets.value = ticketData.data || []
+    if (tab.value === 'kanban' && ticketData.meta) {
+      kanbanPagination.value = {
+        ...kanbanPagination.value,
+        page: ticketData.meta.current_page,
+        rowsPerPage: ticketData.meta.per_page,
+        rowsNumber: ticketData.meta.total,
+        lastPage: ticketData.meta.last_page,
+        from: ticketData.meta.from,
+        to: ticketData.meta.to
+      }
+    }
+  } catch (error) {
+    $q.notify({ type: 'negative', message: error.message })
+  } finally {
+    loading.value = false
+  }
+}
+
+async function changeKanbanPage(page) {
+  kanbanPagination.value.page = page
+  await loadTicketPage()
+}
+
+async function changeKanbanPageSize(rowsPerPage) {
+  kanbanPagination.value = { ...kanbanPagination.value, page: 1, rowsPerPage }
+  await loadTicketPage()
+}
+
+async function applyKanbanFilters() {
+  kanbanPagination.value.page = 1
+  await loadTicketPage()
 }
 
 async function applyBulkAction() {
@@ -1589,6 +1624,8 @@ function queryString(data) {
 
 function clearFilters() {
   Object.assign(filters, { search: '', status: null, type: null, priority: null, category_id: null, department_id: null, assigned_to: null, source: null, sla: null, date_from: '', date_to: '' })
+  ticketPagination.value.page = 1
+  kanbanPagination.value.page = 1
   loadAll()
 }
 
@@ -1860,16 +1897,7 @@ function reflectIncident() {
   })
 }
 
-function dragTicket(ticket, event) {
-  if (loading.value || !canEdit.value) return
-  event?.dataTransfer?.setData('text/plain', String(ticket.id))
-  if (event?.dataTransfer) event.dataTransfer.effectAllowed = 'move'
-  draggedTicket.value = ticket
-}
-
-async function dropTicket(status) {
-  const ticket = draggedTicket.value
-  draggedTicket.value = null
+async function moveKanbanTicket({ ticket, status }) {
   if (loading.value || !canEdit.value || !ticket || ticket.status === status) return
 
   if (!(ticket.available_transitions || []).includes(status)) {
@@ -2206,19 +2234,6 @@ function slaColor(value, status) {
   if (['resolvido', 'encerrado', 'cancelado'].includes(status)) return 'positive'
   if (!value) return 'grey'
   return new Date(value) < new Date() ? 'negative' : 'warning'
-}
-
-function isOverdue(ticket) {
-  return !['resolvido', 'encerrado', 'cancelado'].includes(ticket.status) && ticket.sla_due_at && new Date(ticket.sla_due_at) < new Date()
-}
-
-function openTime(value) {
-  if (!value) return '-'
-  const minutes = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 60000))
-  if (minutes < 60) return `${minutes} min`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours} h`
-  return `${Math.floor(hours / 24)} d`
 }
 
 function formatFileSize(size) {

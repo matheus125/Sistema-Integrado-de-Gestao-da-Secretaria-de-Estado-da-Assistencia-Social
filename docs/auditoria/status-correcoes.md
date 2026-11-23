@@ -1,6 +1,6 @@
 # Status das correções da auditoria
 
-Última atualização: 22/11/2026.
+Última atualização: 23/11/2026.
 
 | ID | Problema | Status | Arquivos/testes | Evidência e observações |
 |---|---|---|---|---|
@@ -23,13 +23,13 @@
 | FIX-017 | Datas | VALIDADA | composable central, tabelas, sessões, relatórios e teste Node | 6 testes frontend; regressão com 168 testes/1.015 asserções e build SPA aprovados; payloads dos inputs permanecem ISO. |
 | FIX-018 | Nomes acessíveis | VALIDADA | `aria-label` contextual e teste Node | 166/166 botões com ícone ou formato redondo possuem nome explícito; regressão com 168 testes/1.015 asserções e build SPA aprovados. |
 | FIX-019 | Erros 422 por campo | VALIDADA | serviço reativo, API, 24 formulários e teste Node | 187 controles submetidos cobertos, além de configurações, relatórios e ações do chamado; 5 testes direcionados, regressão com 168 testes/1.015 asserções e build SPA aprovados. |
-| FIX-020 | Responsividade de modais | PENDENTE | — | Não iniciada. |
-| FIX-021 | Auditoria axe/Playwright | PENDENTE | — | Não iniciada. |
-| FIX-022 | Paginação/virtualização do Kanban | PENDENTE | — | Não iniciada. |
-| FIX-023 | Exportações grandes | PENDENTE | — | Não iniciada. |
-| FIX-024 | Limites de paginação | PENDENTE | — | Não iniciada. |
-| FIX-025 | Refatorações estruturais | PENDENTE | — | Não iniciada. |
-| FIX-026 | Vitest | PENDENTE | — | Não iniciada. |
+| FIX-020 | Responsividade de modais | VALIDADA | CSS global, ciclo de foco, roteiro Chrome e relatório `24-responsividade-modais.md` | 27 modais em 375/768/1440 px: 81/81 combinações aprovadas, sem corte/overflow, fuga ou falha de restauração do foco; regressão com 168 testes/1.015 asserções e build SPA aprovados. |
+| FIX-021 | Auditoria axe/Playwright | VALIDADA | roteiro axe/teclado, contraste, viewport, semântica ARIA e relatório `25-acessibilidade-axe.md` | 19 varreduras e 171 paradas de teclado: zero violações axe, falhas de foco/teclado ou erros de runtime; regressões Laravel, frontend, modais e build aprovadas. |
+| FIX-022 | Paginação/virtualização do Kanban | VALIDADA | API paginada, controles frontend, teste de volume e `26-paginacao-kanban.md` | Cenário com 180 chamados retornou somente 25 itens na página 3; teto 100, 34 testes frontend, 168 testes/1.022 asserções Laravel e build SPA aprovados. |
+| FIX-023 | Exportações grandes | VALIDADA | job, armazenamento privado, limites, expiração, frontend e `27-exportacoes-assincronas.md` | 7 cenários/59 asserções direcionados; CSV/XLSX/PDF, autorização, limite, timeout e limpeza aprovados; regressão com 172 testes/1.063 asserções, 37 testes frontend e build SPA. |
+| FIX-024 | Limites de paginação | VALIDADA | middleware global, configuração, 16 listagens e `28-limite-global-paginacao.md` | 5 cenários/79 asserções direcionados; extremos recebem 422, limite/default preservados; regressão com 177 testes/1.142 asserções, 37 testes frontend e build SPA. |
+| FIX-025 | Refatorações estruturais | VALIDADA | `ReportBuilder`, `ItKanbanBoard`, testes estruturais e `29-refatoracao-estrutural.md` | Controller de relatórios reduzido de 591 para 123 linhas e Kanban extraído da página; 3 testes estruturais, regressão com 177 testes/1.142 asserções, 40 testes frontend e build SPA aprovados. |
+| FIX-026 | Vitest | VALIDADA | configuração, 4 suítes unitárias e `30-vitest-componentes.md` | Formulários, login, store e serviço API cobertos por 13 testes Vitest; 40 testes Node, 177 testes/1.142 asserções Laravel, audit npm sem vulnerabilidades e build SPA aprovados. |
 | FIX-027 | Playwright | PENDENTE | — | Não iniciada. |
 | FIX-028 | Testes negativos/IDOR | PENDENTE | — | Não iniciada. |
 | FIX-029 | Cobertura permanente do webhook | PENDENTE | — | Reutilizar a suíte criada na FIX-001. |
@@ -99,3 +99,24 @@
 | 22/11/2026 | FIX-019 | PENDENTE → EM EXECUÇÃO | Confirmado que o serviço preservava `payload.errors`, mas as telas exibiam somente a primeira mensagem em `Notify`, sem associação aos controles. |
 | 22/11/2026 | FIX-019 | EM EXECUÇÃO → CORRIGIDA | Registro reativo passou a mapear mensagens simples, múltiplas e aninhadas; formulários, uploads, configurações, relatórios e ações do chamado foram vinculados aos campos. |
 | 22/11/2026 | FIX-019 | CORRIGIDA → VALIDADA | Teste estático confirmou 187/187 controles submetidos cobertos em 24 `QForm`; 5 testes direcionados, regressão com 168 testes/1.015 asserções e build Quasar aprovados. |
+| 23/11/2026 | FIX-020 | PENDENTE → EM EXECUÇÃO | Inventário encontrou 27 modais; somente o detalhe do chamado limitava altura no mobile e o foco alcançava o `body` ao completar o ciclo de tabulação. |
+| 23/11/2026 | FIX-020 | EM EXECUÇÃO → CORRIGIDA | Limites com `vh`/`dvh`, rolagem interna, ações flexíveis e ciclo central de `Tab`/`Shift+Tab` foram implementados sem alterar os fluxos dos formulários. |
+| 23/11/2026 | FIX-020 | CORRIGIDA → VALIDADA | Chrome headless aprovou 27 modais em três viewports (81/81), sem corte, overflow, fuga ou falha de refoco; 31 testes frontend, 168 testes/1.015 asserções Laravel e build SPA aprovados. |
+| 23/11/2026 | FIX-021 | PENDENTE → EM EXECUÇÃO | A primeira matriz axe encontrou 24 ocorrências críticas/sérias em semântica ARIA e contraste, além de zoom bloqueado, campo dinâmico sem rótulo e foco visual inconsistente. |
+| 23/11/2026 | FIX-021 | EM EXECUÇÃO → CORRIGIDA | Viewport, navegação, cores, legendas, estados de carregamento, rótulos dinâmicos e indicador global de foco foram corrigidos; roteiro axe/teclado foi adicionado. |
+| 23/11/2026 | FIX-021 | CORRIGIDA → VALIDADA | 19 varreduras axe e 171 paradas de teclado terminaram sem violações ou falhas; 27 modais/81 combinações, 31 testes frontend, 168 testes/1.015 asserções e build SPA aprovados. |
+| 23/11/2026 | FIX-022 | PENDENTE → EM EXECUÇÃO | Confirmado que o modo Kanban ignorava `per_page` e executava `get()` com todas as relações da coleção filtrada. |
+| 23/11/2026 | FIX-022 | EM EXECUÇÃO → CORRIGIDA | Consulta paginada, metadados/links e controles independentes de página e tamanho foram implementados; o frontend mantém somente a página corrente. |
+| 23/11/2026 | FIX-022 | CORRIGIDA → VALIDADA | Teste com 180 chamados confirmou 25 itens na página 3 e transições preservadas; 34 testes frontend, 168 testes/1.022 asserções Laravel e build SPA aprovados. |
+| 23/11/2026 | FIX-023 | PENDENTE → EM EXECUÇÃO | Confirmado que CSV, XLSX e PDF eram gerados na requisição e que consultas com `get()` não possuíam limite explícito. |
+| 23/11/2026 | FIX-023 | EM EXECUÇÃO → CORRIGIDA | Job dedicado, limites por formato, timeout, arquivo privado temporário, propriedade do download, expiração, limpeza e polling frontend implementados. |
+| 23/11/2026 | FIX-023 | CORRIGIDA → VALIDADA | 7 cenários/59 asserções comprovaram os três formatos, limite, autorização, timeout e limpeza; 172 testes/1.063 asserções Laravel, 37 testes frontend e build SPA aprovados. |
+| 23/11/2026 | FIX-024 | PENDENTE → EM EXECUÇÃO | Inventário encontrou 16 listagens paginadas; somente quatro validavam explicitamente o teto e as demais repassavam `per_page` ao paginator. |
+| 23/11/2026 | FIX-024 | EM EXECUÇÃO → CORRIGIDA | Middleware central e configuração única passaram a validar inteiro entre 1 e 100 antes dos controllers, preservando defaults e autenticação. |
+| 23/11/2026 | FIX-024 | CORRIGIDA → VALIDADA | 5 cenários/79 asserções cobriram todas as 16 listagens, extremos, configuração e rotas públicas; 177 testes/1.142 asserções Laravel, 37 testes frontend e build SPA aprovados. |
+| 23/11/2026 | FIX-025 | PENDENTE → EM EXECUÇÃO | Confirmado que o controller de relatórios misturava HTTP e 18 consultas, o gerador dependia do controller e a página do Help Desk continha também todo o quadro Kanban. |
+| 23/11/2026 | FIX-025 | EM EXECUÇÃO → CORRIGIDA | Consultas movidas para `ReportBuilder`, gerador desacoplado da camada HTTP e quadro/drag-and-drop extraídos para `ItKanbanBoard`, preservando contratos e fluxos. |
+| 23/11/2026 | FIX-025 | CORRIGIDA → VALIDADA | 3 testes estruturais, 12 testes direcionados/154 asserções, 177 testes/1.142 asserções Laravel, 40 testes frontend e build SPA aprovados. |
+| 23/11/2026 | FIX-026 | PENDENTE → EM EXECUÇÃO | Confirmada a ausência de executor unitário Vue; os 40 testes Node não montavam componentes nem isolavam store e serviço API. |
+| 23/11/2026 | FIX-026 | EM EXECUÇÃO → CORRIGIDA | Vitest/JSDOM, scripts e 13 cenários foram adicionados para componentes de formulário, login, autenticação e contratos HTTP simulados. |
+| 23/11/2026 | FIX-026 | CORRIGIDA → VALIDADA | 13 testes Vitest e 40 testes Node aprovados; regressão Laravel com 177 testes/1.142 asserções, audit npm em zero e build SPA aprovados. |

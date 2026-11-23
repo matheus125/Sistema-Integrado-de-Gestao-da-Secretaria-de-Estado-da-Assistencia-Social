@@ -8,6 +8,7 @@ use App\Models\ItSlaRule;
 use App\Models\ItTicket;
 use App\Models\ItTicketCategory;
 use App\Models\User;
+use App\Services\It\SlaService;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -311,11 +312,11 @@ class ItHelpDeskWorkflowTest extends TestCase
             ->assertJsonPath('available_transitions', ['aguardando_usuario', 'resolvido']);
     }
 
-    public function test_kanban_view_returns_all_filtered_tickets_with_available_transitions(): void
+    public function test_kanban_view_paginates_large_filtered_result_with_available_transitions(): void
     {
         [$user, $department] = $this->itContext();
 
-        foreach (range(1, 18) as $number) {
+        foreach (range(1, 180) as $number) {
             ItTicket::create([
                 'department_id' => $department->id,
                 'opened_by' => $user->id,
@@ -329,12 +330,19 @@ class ItHelpDeskWorkflowTest extends TestCase
 
         Sanctum::actingAs($user);
 
-        $response = $this->getJson('/api/it/tickets?kanban=1&per_page=1')
+        $response = $this->getJson('/api/it/tickets?kanban=1&per_page=25&page=3')
             ->assertOk()
             ->assertJsonPath('meta.view', 'kanban')
-            ->assertJsonPath('meta.total', 18);
+            ->assertJsonPath('meta.current_page', 3)
+            ->assertJsonPath('meta.last_page', 8)
+            ->assertJsonPath('meta.per_page', 25)
+            ->assertJsonPath('meta.total', 180)
+            ->assertJsonPath('meta.from', 51)
+            ->assertJsonPath('meta.to', 75)
+            ->assertJsonPath('links.prev', url('/api/it/tickets?kanban=1&per_page=25&page=2'))
+            ->assertJsonPath('links.next', url('/api/it/tickets?kanban=1&per_page=25&page=4'));
 
-        $this->assertCount(18, $response->json('data'));
+        $this->assertCount(25, $response->json('data'));
         $triageTicket = collect($response->json('data'))->firstWhere('status', 'triagem');
         $this->assertSame(['em_atendimento', 'aguardando_usuario', 'resolvido'], $triageTicket['available_transitions']);
     }
@@ -715,7 +723,7 @@ class ItHelpDeskWorkflowTest extends TestCase
             'active' => true,
         ]);
 
-        $resolved = app(\App\Services\It\SlaService::class)->resolveRule([
+        $resolved = app(SlaService::class)->resolveRule([
             'priority' => 'baixa',
             'department_id' => $department->id,
         ]);

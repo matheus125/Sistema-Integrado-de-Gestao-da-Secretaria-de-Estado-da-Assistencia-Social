@@ -42,7 +42,7 @@
                   v-bind="serverErrorProps(`settings.${settingIndex(setting)}.value`, setting.key)"
                 >
                   <template #control>
-                    <q-toggle v-model="setting.value" :label="setting.value ? 'Habilitado' : 'Desabilitado'" />
+                    <q-toggle v-model="setting.value" :label="setting.value ? 'Habilitado' : 'Desabilitado'" :aria-label="setting.label" />
                   </template>
                 </q-field>
                 <q-input
@@ -52,6 +52,7 @@
                   outlined
                   type="number"
                   dense
+                  :aria-label="setting.label"
                 />
                 <q-input
                   v-else
@@ -63,6 +64,7 @@
                   :maxlength="4096"
                   :rules="[maxLength(4096)]"
                   :placeholder="setting.has_secret ? 'Valor sigiloso ja cadastrado' : ''"
+                  :aria-label="setting.label"
                 />
               </q-card-section>
             </q-card>

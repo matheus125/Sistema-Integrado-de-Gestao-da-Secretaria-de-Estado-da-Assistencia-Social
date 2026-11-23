@@ -17,6 +17,15 @@
     "test:date-format": "node --test tests/date-format.test.js",
     "test:accessible-buttons": "node --test tests/accessible-icon-buttons.test.js",
     "test:server-validation": "node --test tests/server-validation.test.js",
+    "test:modals": "node ../../scripts/modal-responsive-test.cjs",
+    "test:a11y": "node ../../scripts/accessibility-audit.cjs",
+    "test:kanban-pagination": "node --test tests/kanban-pagination.test.js",
+    "test:report-exports": "node --test tests/report-export-queue.test.js",
+    "test:structure": "node --test tests/structural-refactor.test.js",
+    "test:node": "node --test tests/*.test.js",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test": "npm run test:node && npm run test:unit",
     "postinstall": "quasar prepare --silent"
   },
   "dependencies": {
@@ -28,8 +37,11 @@
   },
   "devDependencies": {
     "@quasar/app-vite": "^3.10.4",
+    "@vitejs/plugin-vue": "^6.0.11",
     "autoprefixer": "^10.4.27",
-    "postcss": "^8.5.32"
+    "jsdom": "^31.0.1",
+    "postcss": "^8.5.32",
+    "vitest": "^5.1.1"
   },
   "keywords": [
     "quasar",

@@ -68,14 +68,29 @@ Bloqueadores: webhook, dependências, rate limit, segredos e ambiente de produç
   telefone, placa e moeda BRL; a FIX-017 padronizou datas e horas exibidas sem
   alterar os payloads ISO;
 - responsividade: 375/768/1366 sem overflow global nas rotas testadas;
+- modais: a FIX-020 aprovou os 27 diálogos em 375/768/1440 px (81/81), sem
+  corte/overflow e com foco preso/restaurado;
 - bugs visuais confirmados: nenhum bloqueador;
 - acessibilidade: a auditoria original encontrou vários botões sem nome; a
   FIX-018 corrigiu 96 casos e confirmou 166/166 controles com nome explícito;
+- axe/teclado: a FIX-021 aprovou 19 varreduras e 171 paradas de foco sem
+  violações ou falhas automatizadas;
 - validação: a FIX-019 associou respostas 422 aos respectivos campos em 24
   formulários, incluindo mensagens múltiplas e chaves aninhadas;
 - integração: smoke aprovado sem erro de console/rede após correção da URL do roteiro;
 - testes JS próprios: ausentes na auditoria original; após as correções
-  incrementais, 31 testes Node estão aprovados.
+  incrementais, 40 testes Node e 13 testes Vitest estão aprovados;
+- Kanban: a FIX-022 substituiu a carga integral por paginação no banco, com 25
+  cartões por padrão, máximo de 100 e controles independentes na interface.
+- exportações: a FIX-023 moveu CSV/XLSX/PDF para fila com timeout, limites por
+  formato, armazenamento privado, propriedade do download e expiração.
+- paginação: a FIX-024 impôs teto global configurável nas 16 listagens; valores
+  inválidos ou acima de 100 recebem 422 antes da consulta.
+- estrutura: a FIX-025 reduziu `ReportController` de 591 para 123 linhas,
+  desacoplou as exportações da camada HTTP e extraiu o quadro Kanban para um
+  componente próprio, sem mudar os contratos funcionais.
+- testes unitários Vue: a FIX-026 incorporou Vitest/JSDOM para formulários,
+  login, store de autenticação e serviço API, com 13 testes e audit npm em zero.
 
 ## Backend
 
@@ -86,7 +101,9 @@ Bloqueadores: webhook, dependências, rate limit, segredos e ambiente de produç
 - nenhuma falha IDOR confirmada;
 - falhas na auditoria original: webhook, rate limit, telefone/placa, expiração e
   segredos; as respectivas correções incrementais estão registradas no status;
-- arquitetura: controllers de 827/746/487 linhas e página Vue de 2.220 linhas.
+- arquitetura: `ReportController` foi reduzido a 123 linhas pela FIX-025;
+  controllers de 827/746 linhas e páginas Vue grandes permanecem como risco
+  residual.
 
 ## Banco
 
@@ -106,7 +123,7 @@ Bloqueadores: webhook, dependências, rate limit, segredos e ambiente de produç
 | Fase | Estado | Evidência |
 |---|---|---|
 | A — Fundação | CONCLUÍDA | categorias, tipos, paginação, datas, notas, timeline e cancelamento testados |
-| B — Gestão operacional | CONCLUÍDA | equipes, atribuição, SLA/calendário, escalonamento, notificações e Kanban |
+| B — Gestão operacional | CONCLUÍDA | equipes, atribuição, SLA/calendário, escalonamento, notificações e Kanban paginado |
 | C — Experiência | PARCIAL | meus chamados, avaliação, templates e conhecimento funcionam; WhatsApp é inseguro/não validado externamente |
 | D — Gestão técnica | CONCLUÍDA | patrimônio, causa, checklists, tarefas, relações e incidentes presentes; partes com cobertura parcial |
 | E — Automação | CONCLUÍDA | regras, catálogo, aprovações, impacto/urgência e preventiva testados |
@@ -140,5 +157,6 @@ Justificativa baseada em evidências:
 6. Fazer o production-check passar em ambiente de homologação semelhante à produção.
 7. Cobrir CRUD/IDOR de Administração e Materiais.
 8. Validar e mascarar telefone, placa e moeda.
-9. Paginar Kanban e tornar exportações seguras/assíncronas.
+9. Concluída: paginação do Kanban na FIX-022 e exportações assíncronas/limitadas
+   na FIX-023.
 10. Implantar CI, monitoramento e teste periódico de restore.

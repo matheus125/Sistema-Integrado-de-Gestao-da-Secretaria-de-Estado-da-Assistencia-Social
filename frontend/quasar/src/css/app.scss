@@ -11,6 +11,16 @@ html,
   overflow-x: hidden;
 }
 
+:where(a, button, input, select, textarea, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 3px solid #ffdd00 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px #111 !important;
+}
+
+.q-btn.disabled {
+  opacity: 1 !important;
+}
+
 .q-page-container,
 .q-page,
 .q-layout,
@@ -37,6 +47,21 @@ html,
   background: #e8f2ff;
   color: #0b62b4;
   font-weight: 600;
+}
+
+.q-drawer .q-item__label--caption {
+  color: #526070;
+  opacity: 1;
+}
+
+.q-drawer .active-nav .q-item__label--caption {
+  color: #0b4f8a !important;
+}
+
+.text-grey-7,
+.q-item__label--caption {
+  color: #526070 !important;
+  opacity: 1;
 }
 
 .dashboard-page {
@@ -326,6 +351,12 @@ html,
 
 .dialog-card {
   width: min(620px, calc(100vw - 28px));
+  max-width: calc(100vw - 28px);
+  max-height: calc(100vh - 28px);
+  max-height: calc(100dvh - 28px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .request-dialog {
@@ -543,10 +574,23 @@ html,
 
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(6, minmax(220px, 1fr));
+  grid-template-columns: repeat(7, minmax(220px, 1fr));
   gap: 12px;
   overflow-x: auto;
   padding-bottom: 8px;
+}
+
+.kanban-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.kanban-pagination .q-field {
+  width: 170px;
 }
 
 .kanban-column {
@@ -650,7 +694,7 @@ html,
   }
 
   .kanban-board {
-    grid-template-columns: repeat(6, minmax(240px, 260px));
+    grid-template-columns: repeat(7, minmax(240px, 260px));
   }
 }
 
@@ -703,9 +747,24 @@ html,
     flex: 1 1 auto;
   }
 
-  .ticket-detail-dialog {
+  .dialog-card,
+  .request-dialog,
+  .ticket-detail-dialog,
+  .permissions-dialog,
+  .audit-detail-dialog {
     width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px);
     max-height: calc(100vh - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+
+  .q-dialog__inner {
+    padding: 8px;
+  }
+
+  .dialog-card > .q-card__actions,
+  .dialog-card > .q-form > .q-card__actions {
+    flex-wrap: wrap;
   }
 
   .span-2 {

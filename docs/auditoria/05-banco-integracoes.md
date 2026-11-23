@@ -76,6 +76,12 @@ concorrente dedicado. Carga prolongada permanece para a homologação operaciona
 
 - 18 relatórios;
 - CSV, XLSX e PDF baixados em navegador isolado;
+
+Atualização de 23/11/2026: a FIX-023 adicionou a tabela `report_exports` para
+estado e propriedade dos jobs. Os arquivos são gravados no disco privado,
+expiram por padrão em 60 minutos e são removidos pelo comando agendado
+`reports:prune-exports`. Nenhuma migration foi aplicada ao MySQL real nesta
+validação.
 - advisories atingem Dompdf e PhpSpreadsheet;
 - não houve teste com grande massa ou conteúdo malicioso.
 

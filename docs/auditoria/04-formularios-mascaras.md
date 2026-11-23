@@ -107,3 +107,8 @@ dos formulários separados da formatação visual.
   não tinham nome acessível. A FIX-018 corrigiu os 96 casos encontrados e passou
   a exigir nome explícito em teste automatizado.
 - Mensagens de erro são majoritariamente genéricas (`Campo obrigatorio`).
+- A FIX-020 limitou altura/largura dos 27 modais, habilitou rolagem interna e
+  quebra de linha das ações no mobile, além de prender e restaurar o foco.
+- A FIX-021 nomeou os controles dinâmicos de Configurações, liberou zoom e
+  adicionou indicador global de foco visível; a matriz axe/teclado terminou sem
+  violações ou falhas automatizadas.
